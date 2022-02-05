@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 bracket-lib = "0.8"
 bracket-terminal = "0.8"
+bracket-noise = "0.8"
 specs = "0.16"
 specs-derive = "0.4"

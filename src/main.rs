@@ -14,6 +14,8 @@ use specs_derive::Component;
 mod map;
 pub use map::*;
 
+mod heightmap;
+
 mod gui;
 
 #[derive(Component)]
@@ -42,7 +44,9 @@ fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
 
     for (_player, pos) in (&mut players, &mut positions).join() {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
-        if map[destination_idx] != TileType::Water {
+        if map[destination_idx] != TileType::Water && 
+		   map[destination_idx] != TileType::Mountain &&
+		   map[destination_idx] != TileType::Ice {
             pos.x = min(map_width, max(0, pos.x + delta_x));
             pos.y = min(map_height, max(0, pos.y + delta_y));
         }

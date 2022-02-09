@@ -6,7 +6,7 @@
 
 use specs::prelude::*;
 use bracket_lib::prelude::*;
-use crate::{MAPHEIGHT, MAPWIDTH, Position, Player, TileType, xy_idx};
+use crate::{MAPHEIGHT, MAPWIDTH, Position, Player, Map, TileType, xy_idx};
 
 
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
@@ -20,14 +20,12 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     
     let position = ecs.read_storage::<Position>();
     let player = ecs.read_storage::<Player>();
-    let map = ecs.fetch::<Vec<TileType>>();
+    let map = ecs.fetch::<Map>();
 
     for (_player, pos) in (&player, &position).join() {
-        let current = format!("Pos: ({}. {})", pos.x, pos.y);
-        let tile = map[xy_idx(pos.x, pos.y)]; 
+        let location = format!("Pos: ({}. {})", pos.x, pos.y);
+        let tile = map.tiles[xy_idx(pos.x, pos.y)]; // COME BACK TO THIS
         
-        // let mut tile_str = String::new(); 
-
         let tile_str = match tile {
             TileType::Mountain => { "Mountain".to_string() },        
             TileType::Forest => { "Forest".to_string() },        
@@ -37,12 +35,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             TileType::Ice => {  "Ice".to_string() },        
         };
 
-        let current2 = format!("{}", tile_str);
-
-        ctx.print_color(start_x + 1, start_y + 1, RGB::named(YELLOW), RGB::named(BLACK), &current);
-        ctx.print_color(start_x + 1, start_y + 2, RGB::named(YELLOW), RGB::named(BLACK), &current2);
-
+        let terrain = format!("{}", tile_str);
+        
+        // Write out the tile type and the current position to the gui box
+        ctx.print_color(start_x + 1, start_y + 1, RGB::named(YELLOW), RGB::named(BLACK), &location);
+        ctx.print_color(start_x + 1, start_y + 2, RGB::named(YELLOW), RGB::named(BLACK), &terrain);
     }
-
-
 }

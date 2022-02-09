@@ -1,4 +1,4 @@
-//! Code for this comes form the perlin-fractal example from the bracket-noise crage
+//! Code for this comes from the perlin-fractal example from the bracket-noise crage
 //!
 //! Link: https://github.com/amethyst/bracket-lib/tree/master/bracket-noise
 

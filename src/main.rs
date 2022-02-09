@@ -37,16 +37,16 @@ struct Player {}
 fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
-    let map = ecs.fetch::<Vec<TileType>>();
+    let map = ecs.fetch::<Map>();
 	
 	let map_width: i32 = MAPWIDTH as i32 - 1;
 	let map_height: i32 = MAPHEIGHT as i32 - 1;
 
     for (_player, pos) in (&mut players, &mut positions).join() {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
-        if map[destination_idx] != TileType::Water && 
-		   map[destination_idx] != TileType::Mountain &&
-		   map[destination_idx] != TileType::Ice {
+        if (map.tiles[destination_idx] != TileType::Water) && 
+		   (map.tiles[destination_idx] != TileType::Mountain) &&
+		   (map.tiles[destination_idx] != TileType::Ice) {
             pos.x = min(map_width, max(0, pos.x + delta_x));
             pos.y = min(map_height, max(0, pos.y + delta_y));
         }
@@ -85,8 +85,8 @@ impl GameState for State {
         player_input(self, ctx);
         self.run_systems();
 
-        let map = self.ecs.fetch::<Vec<TileType>>();
-        draw_map(&map, ctx);
+        let map = self.ecs.fetch::<Map>();
+        map.draw_map(ctx);
 
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
@@ -110,8 +110,10 @@ fn main() -> BError {
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
-    
-    gs.ecs.insert(new_map());
+   	
+	let map = Map::new_map();
+ 
+    gs.ecs.insert(map);
 
     gs.ecs
         .create_entity()

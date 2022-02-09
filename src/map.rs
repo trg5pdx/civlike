@@ -45,8 +45,8 @@ impl Map {
     pub fn new_map() -> Map {
         let mut map = Map {
             tiles: vec![TileType::Water; MAPCOUNT], 
-            width: MAPWIDTH as i32 - 1,
-            height: MAPHEIGHT as i32 - 1,
+            width: MAPWIDTH as i32,
+            height: MAPHEIGHT as i32,
         };
         
         let perlin = generate_heightmap();
@@ -92,9 +92,7 @@ impl Map {
         
         let bgd = RGB::from_f32(0.0, 0.0, 0.0);
     
-        let map = &self.tiles;
-
-        for tile in (&map).iter() {
+        for tile in (&self.tiles).iter() {
             // Render a tile depending upon the tile type
             match tile {
                 TileType::Mountain => {
@@ -119,7 +117,7 @@ impl Map {
 
             // move the coordinates
             x += 1;
-            if x > self.width {
+            if x == self.width {
                 x = 0;
                 y += 1;
             }

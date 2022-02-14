@@ -4,11 +4,8 @@
 //!
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
-// use std::cmp::{max, min};
 use bracket_lib::prelude::*;
-// use specs::prelude::*;
 use crate::heightmap::generate_heightmap;
-// use crate::{Viewshed, Player, World};
 
 pub const MAPWIDTH: usize = 120;
 pub const MAPHEIGHT: usize = 120;

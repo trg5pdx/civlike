@@ -10,9 +10,13 @@ use bracket_lib::prelude::*;
 use crate::heightmap::generate_heightmap;
 // use crate::{Viewshed, Player, World};
 
-pub const MAPWIDTH: usize = 60;
-pub const MAPHEIGHT: usize = 50;
+pub const MAPWIDTH: usize = 120;
+pub const MAPHEIGHT: usize = 120;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
+
+pub const VIEW_WIDTH: usize = 60;
+pub const VIEW_HEIGHT: usize = 50;
+pub const VIEW_COUNT: usize = VIEW_WIDTH * VIEW_HEIGHT;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
@@ -83,57 +87,6 @@ impl Map {
         } 
 
         map
-    }
-
-    pub fn draw_map(&self, ctx: &mut BTerm) {
-        let bgd = RGB::from_f32(0.0, 0.0, 0.0);
-        let mut y = 0;
-        let mut x = 0;
-    
-        for (idx, tile) in self.tiles.iter().enumerate() {    
-            // Render a tile depending upon the tile type
-            if self.revealed_tiles[idx] {
-                let glyph;
-                let mut fg;
-
-                match tile {
-                    TileType::Mountain => {
-                        fg = RGB::named(GREY);
-                        glyph = to_cp437('A');
-                        
-                    }
-                    TileType::Forest => {
-                        fg = RGB::named(DARKGREEN);
-                        glyph = to_cp437('t');
-                    }
-                    TileType::Grasslands => {
-                        fg = RGB::named(GREEN);
-                        glyph = to_cp437('w');
-                    }
-                    TileType::Coast => {
-                        fg = RGB::named(YELLOW);
-                        glyph = to_cp437('s');
-                    }
-                    TileType::Water => {
-                        fg = RGB::named(BLUE);
-                        glyph = to_cp437('~');
-                    }
-                    TileType::Ice => {
-                        fg =  RGB::named(WHITE);
-                        glyph = to_cp437('#');
-                    }
-                }
-                if !self.visible_tiles[idx] { fg = fg.to_greyscale() }
-                ctx.set(x, y, fg, bgd, glyph);
-            }
-
-            // move the coordinates
-            x += 1;
-            if x == self.width {
-                x = 0;
-                y += 1;
-            }
-        }
     }
 }
 

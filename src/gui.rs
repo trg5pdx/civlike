@@ -6,14 +6,14 @@
 
 use specs::prelude::*;
 use bracket_lib::prelude::*;
-use crate::{MAPHEIGHT, MAPWIDTH, Position, Player, Map, TileType, xy_idx};
+use crate::{VIEW_HEIGHT, VIEW_WIDTH, Position, Player, Map, TileType, xy_idx};
 
 
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
-    let start_x = MAPWIDTH;
+    let start_x = VIEW_WIDTH;
     let start_y = 0;
     let width = 19;
-    let height = MAPHEIGHT - 1;
+    let height = VIEW_HEIGHT - 1;
 
     // Draws the side box
     ctx.draw_box(start_x, start_y, width, height, RGB::named(WHITE), RGB::named(BLACK));   

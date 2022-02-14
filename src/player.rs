@@ -25,8 +25,11 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
         if (map.tiles[destination_idx] != TileType::Water) && 
 		   (map.tiles[destination_idx] != TileType::Mountain) &&
 		   (map.tiles[destination_idx] != TileType::Ice) {
+            let mut ppos = ecs.write_resource::<Point>();
             pos.x = min(map_width, max(0, pos.x + delta_x));
             pos.y = min(map_height, max(0, pos.y + delta_y));
+            ppos.x = pos.x;
+            ppos.y = pos.y;
 
 			viewshed.dirty = true;
         }

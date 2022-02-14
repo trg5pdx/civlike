@@ -24,6 +24,8 @@ mod gui;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
 
+pub mod camera;
+
 pub struct State {
     pub ecs: World
 }
@@ -42,17 +44,8 @@ impl GameState for State {
         
         player_input(self, ctx);
         self.run_systems();
-
-        let map = self.ecs.fetch::<Map>();
-        map.draw_map(ctx);
-
-        let positions = self.ecs.read_storage::<Position>();
-        let renderables = self.ecs.read_storage::<Renderable>();
-
-        for (pos, render) in (&positions, &renderables).join() {
-            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-        }
-
+		
+		camera::render_camera(&self.ecs, ctx);
 		gui::draw_ui(&self.ecs, ctx);
     }
 }
@@ -90,14 +83,19 @@ fn main() -> BError {
 			range = 60;
 		}
 	}
+	
+	let (player_x, player_y) = (40, 25);
+	
+	gs.ecs.insert(Point::new(player_x, player_y));
 
     gs.ecs
         .create_entity()
-        .with(Position { x: 40, y: 25 })
+        .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: to_cp437('☺'),
             fg: RGB::named(YELLOW),
             bg: RGB::named(BLACK),
+			render_order: 0,
         })
         .with(Player{})
 		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true })

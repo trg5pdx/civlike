@@ -6,7 +6,7 @@
 
 use bracket_lib::prelude::{field_of_view, Point};
 use specs::prelude::*;
-use crate::{Viewshed, Position, Map, Player, xy_idx};
+use crate::{Viewshed, Position, Map, Player, Unit, xy_idx};
 
 pub struct VisibilitySystem {}
 
@@ -37,6 +37,16 @@ impl<'a> System<'a> for VisibilitySystem {
                         map.visible_tiles[idx] = true;
                     }
                 }
+                /* // If this is a unit, reveal what they can see
+                let u: Option<&Unit> = unit.get(ent);
+                if let Some(_u) = u {
+                    for t in map.visible_tiles.iter_mut() { *t = false };
+                    for vis in viewshed.visible_tiles.iter() {
+                        let idx = xy_idx(vis.x, vis.y);
+                        map.revealed_tiles[idx] = true;
+                        map.visible_tiles[idx] = true;
+                    }
+                } */
             }
         }
     }

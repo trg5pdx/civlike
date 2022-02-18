@@ -32,3 +32,9 @@ pub struct Renderable {
 #[derive(Component, Debug)]
 pub struct Player {}
 
+#[derive(Component, Debug)]
+pub struct Unit {
+    pub health: u8,
+    pub strength: u8,
+    pub owner: String,
+}

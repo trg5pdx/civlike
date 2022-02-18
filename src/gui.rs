@@ -6,7 +6,7 @@
 
 use specs::prelude::*;
 use bracket_lib::prelude::*;
-use crate::{VIEW_HEIGHT, VIEW_WIDTH, Position, Player, Map, TileType, xy_idx};
+use crate::{VIEW_HEIGHT, VIEW_WIDTH, Position, Player, Map, TileType, xy_idx, Unit};
 
 
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
@@ -21,6 +21,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let position = ecs.read_storage::<Position>();
     let player = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
+    let unit = ecs.read_storage::<Unit>();
 
     for (_player, pos) in (&player, &position).join() {
         let location = format!("Pos: ({}. {})", pos.x, pos.y);
@@ -40,5 +41,15 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         // Write out the tile type and the current position to the gui box
         ctx.print_color(start_x + 1, start_y + 1, RGB::named(YELLOW), RGB::named(BLACK), &location);
         ctx.print_color(start_x + 1, start_y + 2, RGB::named(YELLOW), RGB::named(BLACK), &terrain);
+
+        for (unit, unit_pos) in (&unit, &position).join() {
+            if (unit_pos.x == pos.x) &&
+               (unit_pos.y == pos.y) {
+                let unit_owner = format!("Owner: {}", unit.owner);
+                let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
+                ctx.print_color(start_x + 1, start_y + 3, RGB::named(YELLOW), RGB::named(BLACK), unit_owner);
+                ctx.print_color(start_x + 1, start_y + 4, RGB::named(YELLOW), RGB::named(BLACK), unit_stats);
+            }
+        }
     }
 }

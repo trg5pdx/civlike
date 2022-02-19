@@ -18,6 +18,9 @@ pub use components::*;
 mod player;
 pub use player::*;
 
+mod unit;
+pub use unit::*;
+
 mod heightmap;
 mod gui;
 
@@ -27,7 +30,8 @@ use visibility_system::VisibilitySystem;
 pub mod camera;
 
 pub struct State {
-    pub ecs: World
+    pub ecs: World,
+	pub move_unit: bool,
 }
 
 impl State {
@@ -39,14 +43,31 @@ impl State {
 }
 
 impl GameState for State {
-    fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.cls();
-        
-        player_input(self, ctx);
-        self.run_systems();
-		
-		camera::render_camera(&self.ecs, ctx);
-		gui::draw_ui(&self.ecs, ctx);
+    fn tick(&mut self, ctx: &mut BTerm) { 
+		if self.move_unit {
+			ctx.cls();
+			let input = unit_input(self, ctx);
+			if !input {
+				self.move_unit = false;	
+			}	
+			self.run_systems();
+			
+			camera::render_camera(&self.ecs, ctx);
+			gui::draw_ui(&self.ecs, ctx);
+		} else {
+			ctx.cls();
+			
+			let input = player_input(self, ctx);
+
+			if let Some(5) = input {
+				self.move_unit = true;
+			}
+
+			self.run_systems();
+			
+			camera::render_camera(&self.ecs, ctx);
+			gui::draw_ui(&self.ecs, ctx);
+		}	
     }
 }
 
@@ -64,7 +85,8 @@ fn main() -> BError {
             .build()?;
 
     let mut gs = State {
-        ecs: World::new()
+        ecs: World::new(),
+		move_unit: false,
     };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();

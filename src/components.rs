@@ -15,7 +15,7 @@ pub struct Viewshed {
     pub dirty: bool,
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Position {
     pub x: i32,
     pub y: i32,

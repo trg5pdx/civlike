@@ -6,7 +6,7 @@
 
 use bracket_lib::prelude::{field_of_view, Point};
 use specs::prelude::*;
-use crate::{Viewshed, Position, Map, Player, Unit, xy_idx};
+use crate::{Viewshed, Position, Map, Player, xy_idx};
 
 pub struct VisibilitySystem {}
 

@@ -1,3 +1,10 @@
+//! Made by: Thomas Gardner, 2022
+//!
+//! Most of the code for this comes froms the rust roguelike tutorial linked below, and it was pulled from src/player.rs
+//! and tweaked to work for units rather than for moving player units
+//!
+//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
+
 use bracket_lib::prelude::*;
 use std::cmp::{max, min};
 use specs::prelude::*;
@@ -35,7 +42,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> bool {
             VirtualKeyCode::D => { try_move_unit(1, 0, &mut gs.ecs); true },
             VirtualKeyCode::W => { try_move_unit(0, -1, &mut gs.ecs); true },
             VirtualKeyCode::S => { try_move_unit(0, 1, &mut gs.ecs); true },
-            VirtualKeyCode::Q => { false },
+            VirtualKeyCode::Q => { false }, // Need to come back and teleport cursor to unit's last location
             _ => { true }
         },
     }

@@ -121,13 +121,12 @@ fn main() -> BError {
 			render_order: 0,
         })
         .with(Player{})
-		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true })
         .build();
 	
 	// currently used for unit testing
     gs.ecs
         .create_entity()
-        .with(Position { x: player_x + 3, y: player_y })
+        .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: to_cp437('☺'),
             fg: RGB::named(YELLOW),
@@ -142,5 +141,21 @@ fn main() -> BError {
 		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
         .build();
     
+    /* gs.ecs
+        .create_entity()
+        .with(Position { x: player_x + 1, y: player_y })
+        .with(Renderable {
+            glyph: to_cp437('☺'),
+            fg: RGB::named(YELLOW),
+            bg: RGB::named(BLACK),
+			render_order: 1,
+        })
+		.with(Unit {
+			health: 20,
+			strength: 8,
+			owner: "Player1".to_string(),
+		})
+		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
+        .build(); */
     main_loop(context, gs)
 }

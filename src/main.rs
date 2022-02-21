@@ -23,6 +23,7 @@ pub use unit::*;
 
 mod heightmap;
 mod gui;
+mod spawner;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -107,55 +108,20 @@ fn main() -> BError {
 		}
 	}
 	
-	let (player_x, player_y) = (40, 25);
+	let player_pos = (40, 25);
 	
-	gs.ecs.insert(Point::new(player_x, player_y));
-
-    gs.ecs
-        .create_entity()
-        .with(Position { x: player_x, y: player_y })
-        .with(Renderable {
-            glyph: to_cp437('+'),
-            fg: RGB::named(BLACK),
-            bg: RGB::named(PURPLE),
-			render_order: 0,
-        })
-        .with(Player{})
-        .build();
+	gs.ecs.insert(Point::new(player_pos.0, player_pos.1));
+	
+	let player_entity = spawner::player(&mut gs.ecs, player_pos);
 	
 	// currently used for unit testing
-    gs.ecs
-        .create_entity()
-        .with(Position { x: player_x, y: player_y })
-        .with(Renderable {
-            glyph: to_cp437('☺'),
-            fg: RGB::named(YELLOW),
-            bg: RGB::named(BLACK),
-			render_order: 1,
-        })
-		.with(Unit {
-			health: 20,
-			strength: 8,
-			owner: "Player1".to_string(),
-		})
-		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
-        .build();
-    
-    /* gs.ecs
-        .create_entity()
-        .with(Position { x: player_x + 1, y: player_y })
-        .with(Renderable {
-            glyph: to_cp437('☺'),
-            fg: RGB::named(YELLOW),
-            bg: RGB::named(BLACK),
-			render_order: 1,
-        })
-		.with(Unit {
-			health: 20,
-			strength: 8,
-			owner: "Player1".to_string(),
-		})
-		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
-        .build(); */
+	let unit_entity = spawner::unit(&mut gs.ecs, player_pos, range);		
+	/* let mut units = Vec::new();
+	for i in 0..3 {
+		let player_pos = (40 + i, 25);
+		let unit_entity = spawner::unit(&mut gs.ecs, player_pos, range);		
+		units.push(unit_entity);		
+	} */
+	
     main_loop(context, gs)
 }

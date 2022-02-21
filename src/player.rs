@@ -19,7 +19,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     for (_player, pos) in (&mut players, &mut positions).join() {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
 		if map.tiles[destination_idx] != TileType::Ice && 
-           map.visible_tiles[destination_idx] {
+           map.revealed_tiles[destination_idx] {
             let mut ppos = ecs.write_resource::<Point>();
             pos.x = min(map.width, max(0, pos.x + delta_x));
             pos.y = min(map.height, max(0, pos.y + delta_y));

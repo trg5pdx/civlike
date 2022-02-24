@@ -45,9 +45,8 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         for (unit, unit_pos) in (&unit, &position).join() {
             if (unit_pos.x == pos.x) &&
                (unit_pos.y == pos.y) {
-                let unit_owner = format!("Owner: {}", unit.owner);
+                // let unit_owner = format!("Owner: {}", unit.owner);
                 let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
-                ctx.print_color(start_x + 1, start_y + 3, RGB::named(YELLOW), RGB::named(BLACK), unit_owner);
                 ctx.print_color(start_x + 1, start_y + 4, RGB::named(YELLOW), RGB::named(BLACK), unit_stats);
             }
         }

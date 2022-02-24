@@ -13,7 +13,10 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
 			render_order: 0,
         })
         .with(Player{})
+        .with(Viewshed{ visible_tiles: Vec::new(), range: 0, dirty: true}) 
         .build()
+        // Setting the cursor range to 0 so it can be visible while walking through areas that are revealed but not currently
+        // visible, and to prevent it from revealing new tiles on it's own
 }
 
 pub fn unit(ecs: &mut World, position: (i32, i32), range: i32) -> Entity {
@@ -21,7 +24,7 @@ pub fn unit(ecs: &mut World, position: (i32, i32), range: i32) -> Entity {
         .create_entity()
         .with(Position { x: position.0, y: position.1 })
         .with(Renderable {
-            glyph: to_cp437('☺'),
+            glyph: to_cp437('¡'),
             fg: RGB::named(YELLOW),
             bg: RGB::named(BLACK),
 			render_order: 1,
@@ -29,7 +32,6 @@ pub fn unit(ecs: &mut World, position: (i32, i32), range: i32) -> Entity {
 		.with(Unit {
 			health: 20,
 			strength: 8,
-			owner: "Player1".to_string(),
 		})
 		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
         .build()

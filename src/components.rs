@@ -36,5 +36,20 @@ pub struct Player {}
 pub struct Unit {
     pub health: u8,
     pub strength: u8,
-    pub owner: String,
 }
+
+/// For denoting what player owns a specific unit
+#[derive(Component, Debug, Clone)]
+pub struct OwnedBy {
+    pub owner: Entity
+}
+
+/// For keeping track of all the units owned by a player
+#[derive(Component, Debug, Clone)]
+pub struct UnitControl {
+    pub owned_by: Entity,
+    pub unit: Entity,
+}
+
+/* #[derive(Component)]
+pub struct UnitQueue{ pub queue: Vec<specs::Entity> } */

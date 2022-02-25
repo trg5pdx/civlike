@@ -55,14 +55,17 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
 #[derive(PartialEq, Copy, Clone)]
 pub enum UnitMenuResult { Cancel, NoResponse, Selected }
 
-pub fn show_units(gs: &mut State, ctx: &mut BTerm) -> UnitMenuResult {
+// Rename this function to be something more descriptive
+pub fn show_units(gs: &mut State, ctx: &mut BTerm) -> (UnitMenuResult, Option<String>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let names = gs.ecs.read_storage::<Name>();
     let owner = gs.ecs.read_storage::<OwnedBy>();
+    let entities = gs.ecs.entities();
     
     let unit_list = (&owner, &names).join().filter(|unit| unit.0.owner == *player_entity );
     let count = unit_list.count();
-
+    
+    let mut owned_units: Vec<Entity> = Vec::new();
     let mut y = (25 - (count / 2)) as i32;
     let mut j = 0;
 
@@ -70,22 +73,30 @@ pub fn show_units(gs: &mut State, ctx: &mut BTerm) -> UnitMenuResult {
     ctx.print_color(18, y - 2, RGB::named(YELLOW), RGB::named(BLACK), "Unit List");
     ctx.print_color(18, y + count as i32 + 1, RGB::named(YELLOW), RGB::named(BLACK), "ESCAPE to cancel");
 
-    for (_owned, name) in (&owner, &names).join().filter(|unit| unit.0.owner == *player_entity) {
+    for (_owned, name, entity) in (&owner, &names, &entities).join().filter(|unit| unit.0.owner == *player_entity) {
         ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('('));
         ctx.set(18, y, RGB::named(YELLOW), RGB::named(BLACK), 97 + j as FontCharType);
         ctx.set(19, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437(')'));
         
         ctx.print(21, y, &name.name.to_string());
+        owned_units.push(entity);
         y += 1;
         j += 1;
     }
     
     match ctx.key {
-        None => UnitMenuResult::NoResponse,
+        None => (UnitMenuResult::NoResponse, None),
         Some(key) => {
             match key {
-                VirtualKeyCode::Escape => { UnitMenuResult::Cancel }
-                _ => UnitMenuResult::NoResponse
+                VirtualKeyCode::Escape => { (UnitMenuResult::Cancel, None) }
+                // _ => UnitMenuResult::NoResponse
+                _ => {
+                    let selection = letter_to_option(key);
+                    if selection > -1 && selection < count as i32 {
+                        return (UnitMenuResult::Selected, Some(names.get(owned_units[selection as usize]).unwrap().name.clone()));
+                    }
+                    (UnitMenuResult::NoResponse, None)
+                }
             }
         }
     }

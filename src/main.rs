@@ -44,6 +44,7 @@ pub enum RunState {
 pub struct State {
     pub ecs: World,
 	pub runstate: RunState,
+	pub selected_unit: String, // BAD, NO STOP DOING THIS
 }
 
 impl State {
@@ -66,7 +67,7 @@ impl GameState for State {
 		ctx.cls();	
 		camera::render_camera(&self.ecs, ctx);
 		gui::draw_ui(&self.ecs, ctx);
-
+		
 		match self.runstate {
 			RunState::MoveCursor => {
 				self.run_systems();
@@ -74,18 +75,31 @@ impl GameState for State {
 			}
 			RunState::MoveUnit => {
 				self.run_systems();
-				self.runstate = unit_input(self, ctx);
+				self.runstate = unit_input(self, &self.selected_unit.clone(), ctx);
 			}
 			RunState::ShowUnits => {
-				if gui::show_units(self, ctx) == gui::UnitMenuResult::Cancel {
-					self.runstate = RunState::Paused;
-				}				
+				let result = gui::show_units(self, ctx);
+				match result.0 {
+					gui::UnitMenuResult::Cancel => { self.runstate = RunState::Paused },
+					gui::UnitMenuResult::Selected => {	
+						self.selected_unit = result.1.unwrap();
+						// println!("{:?}", selected_unit);
+
+						/* while unit_input(self, &selected_unit, ctx) == RunState::MoveUnit {
+							ctx.cls();
+							camera::render_camera(&self.ecs, ctx);
+							gui::draw_ui(&self.ecs, ctx);
+							self.run_systems();
+						}; */
+						self.runstate = RunState::MoveUnit;
+					}
+					gui::UnitMenuResult::NoResponse => {}
+				}
 			}
 			_ => {
 				self.runstate = player_input(self, ctx);
 			}
 		}
-
     }
 }
 
@@ -105,6 +119,7 @@ fn main() -> BError {
     let mut gs = State {
         ecs: World::new(),
 		runstate: RunState::MoveCursor,
+		selected_unit: String::new(),
     };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
@@ -137,10 +152,12 @@ fn main() -> BError {
 	gs.ecs.insert(player_entity);
 	
 	// currently used for unit testing
-	let unit_entity = spawner::unit(&mut gs.ecs, player_pos, range);		
+	let unit_entity = spawner::unit(&mut gs.ecs, player_pos, "Unit1".to_string(), range);		
 	gs.ecs.insert(unit_entity);	
-	let unit_entity2 = spawner::unit(&mut gs.ecs, (40, 26), range);		
+	let unit_entity2 = spawner::unit(&mut gs.ecs, (40, 26), "Unit2".to_string(), range);		
 	gs.ecs.insert(unit_entity2);	
+	let unit_entity3 = spawner::unit(&mut gs.ecs, (40, 32), "Unit3".to_string(), range);		
+	gs.ecs.insert(unit_entity3);	
 	
 	// let _unit_entity_2 = spawner::unit(&mut gs.ecs, (45, 26), range);		
 	/* let mut units = UnitQueue { queue: Vec::new() };

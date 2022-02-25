@@ -1,7 +1,6 @@
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use crate::{Player, Unit, Name, Renderable, Position, Viewshed, BlocksTile};
-use crate::UnitState::*;
 
 pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
     ecs
@@ -21,7 +20,7 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
         // visible, and to prevent it from revealing new tiles on it's own
 }
 
-pub fn unit(ecs: &mut World, position: (i32, i32), range: i32) -> Entity {
+pub fn unit(ecs: &mut World, position: (i32, i32), name: String, range: i32) -> Entity {
     ecs
         .create_entity()
         .with(Position { x: position.0, y: position.1 })
@@ -34,10 +33,9 @@ pub fn unit(ecs: &mut World, position: (i32, i32), range: i32) -> Entity {
 		.with(Unit {
 			health: 20,
 			strength: 8,
-            state: Idle,
 		})
         .with(BlocksTile{})
-        .with(Name{name: "Unit".to_string() })
+        .with(Name{ name })
 		.with(Viewshed{ visible_tiles: Vec::new(), range, dirty: true})
         .build()
 }

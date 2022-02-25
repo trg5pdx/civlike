@@ -40,16 +40,10 @@ pub struct Name {
 #[derive(Component, Debug)]
 pub struct Player {}
 
-pub enum UnitState {
-    Selected,
-    Idle,
-}
-
 #[derive(Component)]
 pub struct Unit {
     pub health: u8,
     pub strength: u8,
-    pub state: UnitState,
 }
 
 /// For denoting what player owns a specific unit

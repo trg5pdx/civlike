@@ -28,6 +28,9 @@ mod spawner;
 mod visibility_system;
 use visibility_system::VisibilitySystem;
 
+mod map_indexing_system;
+use map_indexing_system::MapIndexingSystem;
+
 pub mod camera;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -35,6 +38,7 @@ pub enum RunState {
 	Paused,
 	MoveCursor,
 	MoveUnit,
+	ShowUnits,
 }
 
 pub struct State {
@@ -43,13 +47,15 @@ pub struct State {
 }
 
 impl State {
-    fn run_systems(&mut self) {
+    fn run_systems(&mut self) {       
+		let mut mapindex = MapIndexingSystem{};
+		mapindex.run_now(&self.ecs);
+
 		let mut vis = VisibilitySystem{};
 		vis.run_now(&self.ecs);
-       	
-		/*  
+	
 		let mut owned = UnitOwnershipSystem{};
-		owned.run_now(&self.ecs); */
+		owned.run_now(&self.ecs);
 
 		self.ecs.maintain();
     }
@@ -58,6 +64,8 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) { 
 		ctx.cls();	
+		camera::render_camera(&self.ecs, ctx);
+		gui::draw_ui(&self.ecs, ctx);
 
 		match self.runstate {
 			RunState::MoveCursor => {
@@ -68,13 +76,16 @@ impl GameState for State {
 				self.run_systems();
 				self.runstate = unit_input(self, ctx);
 			}
+			RunState::ShowUnits => {
+				if gui::show_units(self, ctx) == gui::UnitMenuResult::Cancel {
+					self.runstate = RunState::Paused;
+				}				
+			}
 			_ => {
 				self.runstate = player_input(self, ctx);
 			}
 		}
 
-		camera::render_camera(&self.ecs, ctx);
-		gui::draw_ui(&self.ecs, ctx);
     }
 }
 
@@ -100,6 +111,10 @@ fn main() -> BError {
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Unit>();
+    gs.ecs.register::<Name>();
+    gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<OwnedBy>();
+    gs.ecs.register::<UnitControl>();
    		
 	let map = Map::new_map();
  
@@ -118,10 +133,15 @@ fn main() -> BError {
 	
 	gs.ecs.insert(Point::new(player_pos.0, player_pos.1));
 	
-	let _player_entity = spawner::player(&mut gs.ecs, player_pos);
-		
+	let player_entity = spawner::player(&mut gs.ecs, player_pos);
+	gs.ecs.insert(player_entity);
+	
 	// currently used for unit testing
-	let _unit_entity = spawner::unit(&mut gs.ecs, player_pos, range);		
+	let unit_entity = spawner::unit(&mut gs.ecs, player_pos, range);		
+	gs.ecs.insert(unit_entity);	
+	let unit_entity2 = spawner::unit(&mut gs.ecs, (40, 26), range);		
+	gs.ecs.insert(unit_entity2);	
+	
 	// let _unit_entity_2 = spawner::unit(&mut gs.ecs, (45, 26), range);		
 	/* let mut units = UnitQueue { queue: Vec::new() };
 	for i in 0..3 {

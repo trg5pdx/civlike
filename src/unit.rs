@@ -12,6 +12,7 @@ use crate::{xy_idx, State, Map, Viewshed, World, Position, Unit, TileType, RunSt
 
 // Doing this a dumb way, I copy pasted this from try_move_player, go back and fix this you idiot
 pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
+    let _player_entity= ecs.fetch::<Entity>();
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -60,13 +61,37 @@ impl<'a> System<'a> for UnitOwnershipSystem {
                         WriteStorage<'a, Position>,
                         WriteStorage<'a, OwnedBy>
                       );
-    fn run(&mut self, _data: Self::SystemData) {
-        /* 
-        let (player_entity, mut unit_control, mut positions, mut owner) = data;
+    fn run(&mut self, data: Self::SystemData) {
+        let (_player_entity, mut unit_control, _positions, mut owner) = data;
         
         for owned in unit_control.join() {
             owner.insert(owned.unit, OwnedBy{ owner: owned.owned_by }).expect("unable to own");
-        } */
+        }
+
+        unit_control.clear();
     }
 }
 
+pub fn get_unit(ecs: &mut World) {
+    let player_pos = ecs.fetch::<Point>();
+    let player_entity = ecs.fetch::<Entity>();
+    let entities = ecs.entities();
+    let units = ecs.read_storage::<Unit>();
+    let positions = ecs.read_storage::<Position>();
+
+    let mut target_unit: Option<Entity> = None;
+
+    for (unit_entity, _unit, position) in (&entities, &units, &positions).join() {
+        if position.x == player_pos.x && position.y == player_pos.y {
+            target_unit = Some(unit_entity);
+        }
+    }
+
+    match target_unit {
+        None => println!("no unit"),
+        Some(unit) => {
+            let mut controlled_by = ecs.write_storage::<UnitControl>();
+            controlled_by.insert(*player_entity, UnitControl { owned_by: *player_entity, unit}).expect("Unable to add unit");
+        }
+    }
+}

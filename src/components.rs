@@ -6,7 +6,7 @@
 
 use bracket_lib::prelude::*;
 use specs::prelude::*;
-use specs_derive::Component;
+use specs_derive::*;
 
 #[derive(Component)]
 pub struct Viewshed {
@@ -28,14 +28,28 @@ pub struct Renderable {
     pub bg: RGB,
     pub render_order: i32,
 }
+// Came from roguelike tutorial chapter 7
+#[derive(Component, Debug)]
+pub struct BlocksTile {}
+
+#[derive(Component, Debug)]
+pub struct Name {
+    pub name: String,
+}
 
 #[derive(Component, Debug)]
 pub struct Player {}
 
-#[derive(Component, Debug)]
+pub enum UnitState {
+    Selected,
+    Idle,
+}
+
+#[derive(Component)]
 pub struct Unit {
     pub health: u8,
     pub strength: u8,
+    pub state: UnitState,
 }
 
 /// For denoting what player owns a specific unit
@@ -50,6 +64,3 @@ pub struct UnitControl {
     pub owned_by: Entity,
     pub unit: Entity,
 }
-
-/* #[derive(Component)]
-pub struct UnitQueue{ pub queue: Vec<specs::Entity> } */

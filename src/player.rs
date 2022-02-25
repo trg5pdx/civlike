@@ -9,7 +9,7 @@
 use bracket_lib::prelude::*;
 use std::cmp::{max, min};
 use specs::prelude::*;
-use crate::{xy_idx, State, Map , World, Position, Player, TileType, Viewshed, RunState};
+use crate::{xy_idx, State, Map , World, Position, Player, TileType, Viewshed, RunState, get_unit};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
@@ -41,7 +41,9 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::D => { try_move_player(1, 0, &mut gs.ecs) },
             VirtualKeyCode::W => { try_move_player(0, -1, &mut gs.ecs) },
             VirtualKeyCode::S => { try_move_player(0, 1, &mut gs.ecs) },
+            VirtualKeyCode::G => { get_unit(&mut gs.ecs) },
 			VirtualKeyCode::C => { return RunState::MoveUnit },
+			VirtualKeyCode::I => { return RunState::ShowUnits },
 			VirtualKeyCode::Escape => std::process::exit(0),
             _ => { return RunState::Paused }
         },

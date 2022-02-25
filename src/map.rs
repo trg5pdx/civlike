@@ -5,6 +5,7 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use bracket_lib::prelude::*;
+use specs::Entity;
 use crate::heightmap::generate_heightmap;
 
 pub const MAPWIDTH: usize = 120;
@@ -36,6 +37,8 @@ pub struct Map {
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
+    pub blocked: Vec<bool>,
+    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl Map {
@@ -47,6 +50,8 @@ impl Map {
             height: MAPHEIGHT as i32,
             revealed_tiles: vec![false; MAPCOUNT],
             visible_tiles: vec![false; MAPCOUNT],
+            blocked: vec![false; MAPCOUNT],
+            tile_content: vec![Vec::new(); MAPCOUNT],
         };
         
         let perlin = generate_heightmap();
@@ -71,8 +76,7 @@ impl Map {
                         map.tiles[idx] = TileType::Water; 
                     }
             }
-        }
-        
+        } 
         // Make the boundaries walls
         for x in 0..map.width {
             map.tiles[xy_idx(x, 0)] = TileType::Ice;
@@ -84,6 +88,18 @@ impl Map {
         } 
 
         map
+    }
+    
+    // Both populate_blocked and clear_content_index came from chapter 7 of the roguelike tutorial
+    pub fn populate_blocked(&mut self) {
+        for (i, tile) in self.tiles.iter_mut().enumerate() {
+            self.blocked[i] = *tile == TileType::Ice;
+        }
+    } 
+    pub fn clear_content_index(&mut self) {
+        for content in self.tile_content.iter_mut() {
+            content.clear();
+        }
     }
 }
 

@@ -2,13 +2,12 @@
 //!
 //! Link: https://github.com/amethyst/bracket-lib/tree/master/bracket-noise
 
-
+use crate::{xy_idx, MAPCOUNT, MAPHEIGHT, MAPWIDTH};
 use bracket_lib::prelude::RandomNumberGenerator;
 use bracket_noise::prelude::*;
-use crate::{MAPWIDTH, MAPHEIGHT, MAPCOUNT, xy_idx};
 
 pub fn generate_heightmap() -> Vec<f32> {
-    let mut rng = RandomNumberGenerator::new(); 
+    let mut rng = RandomNumberGenerator::new();
 
     let mut noise = FastNoise::seeded(rng.next_u64());
     noise.set_noise_type(NoiseType::PerlinFractal);
@@ -17,16 +16,16 @@ pub fn generate_heightmap() -> Vec<f32> {
     noise.set_fractal_gain(1.0);
     noise.set_fractal_lacunarity(3.0);
     noise.set_frequency(3.0);
-     
+
     let mut generated_heightmap = vec![0.0; MAPCOUNT];
-    
+
     let map_height: i32 = MAPHEIGHT as i32 - 1;
     let map_width: i32 = MAPWIDTH as i32 - 1;
-    
+
     for y in 0..=map_height {
         for x in 0..=map_width {
             let idx = xy_idx(x, y);
-            generated_heightmap[idx] = noise.get_noise((x as f32) / 160.0, (y as f32) / 100.0); 
+            generated_heightmap[idx] = noise.get_noise((x as f32) / 160.0, (y as f32) / 100.0);
         }
     }
 

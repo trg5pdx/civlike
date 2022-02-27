@@ -40,6 +40,10 @@ pub struct Name {
 #[derive(Component, Debug)]
 pub struct Player {}
 
+/// Used for marking a unit as being movable
+#[derive(Component, Debug)]
+pub struct Moving;
+
 #[derive(Component)]
 pub struct Unit {
     pub health: u8,
@@ -49,7 +53,7 @@ pub struct Unit {
 /// For denoting what player owns a specific unit
 #[derive(Component, Debug, Clone)]
 pub struct OwnedBy {
-    pub owner: Entity
+    pub owner: Entity,
 }
 
 /// For keeping track of all the units owned by a player

@@ -24,6 +24,7 @@ pub use unit::*;
 mod gui;
 mod heightmap;
 mod spawner;
+use spawner::*;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -138,30 +139,12 @@ fn main() -> BError {
     gs.ecs.insert(player_entity);
 
     // currently used for unit testing
-    let unit_entity = spawner::unit(
-        &mut gs.ecs,
-        player_pos,
-        "Unit1".to_string(),
-        range,
-        &player_entity,
-    );
-    gs.ecs.insert(unit_entity);
-    let unit_entity2 = spawner::unit(
-        &mut gs.ecs,
-        (40, 26),
-        "Unit2".to_string(),
-        range,
-        &player_entity,
-    );
-    gs.ecs.insert(unit_entity2);
-    let unit_entity3 = spawner::unit(
-        &mut gs.ecs,
-        (40, 32),
-        "Unit3".to_string(),
-        range,
-        &player_entity,
-    );
-    gs.ecs.insert(unit_entity3);
+    for i in 0..3 {
+        let pos = (40 + i, 25 - i);
+        let unit_entity = spawner::unit(&mut gs.ecs, pos, format!("Unit{}", i + 1), range);
+        gs.ecs.insert(unit_entity);
+        own_unit(&mut gs.ecs, pos);
+    }
 
     main_loop(context, gs)
 }

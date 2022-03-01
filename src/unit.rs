@@ -71,7 +71,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                 let pos = unmark_moving_unit(&mut gs.ecs).unwrap();
                 teleport_player(pos, &mut gs.ecs);
                 return RunState::Paused;
-            } // Need to come back and teleport cursor to unit's last location
+            }
             _ => {}
         },
     }

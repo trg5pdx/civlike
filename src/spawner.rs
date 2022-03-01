@@ -26,20 +26,14 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
         .build()
 }
 
-pub fn unit(
-    ecs: &mut World,
-    position: (i32, i32),
-    name: String,
-    range: i32,
-    _player: &Entity,
-) -> Entity {
+pub fn unit(ecs: &mut World, position: (i32, i32), name: String, range: i32) -> Entity {
     ecs.create_entity()
         .with(Position {
             x: position.0,
             y: position.1,
         })
         .with(Renderable {
-            glyph: to_cp437('¡'),
+            glyph: to_cp437('i'),
             fg: RGB::named(YELLOW),
             bg: RGB::named(BLACK),
             render_order: 1,
@@ -55,19 +49,31 @@ pub fn unit(
             range,
             dirty: true,
         })
-        .with(BlocksTile {})
         .build()
-    /*
-    let mut owned_units = ecs.write_storage::<UnitControl>();
+}
 
-    owned_units.insert(
-        *player,
-        UnitControl {
-            owned_by: *player,
-            unit,
-        }).expect("failed to mark unit as owned");
+pub fn own_unit(ecs: &mut World, pos: (i32, i32)) {
+    let mut controlled_by = ecs.write_storage::<UnitControl>();
+    let player_entity = ecs.fetch::<Entity>();
+    let entities = ecs.entities();
+    let units = ecs.read_storage::<Unit>();
+    let positions = ecs.read_storage::<Position>();
+    let names = ecs.read_storage::<Name>();
 
-    println!("test");
+    for (unit_entity, _unit, position, name) in (&entities, &units, &positions, &names).join() {
+        if position.x == pos.0 && position.y == pos.1 {
+            println!("found: {}", name.name);
+            let res = controlled_by
+                .insert(
+                    *player_entity,
+                    UnitControl {
+                        owned_by: *player_entity,
+                        unit: unit_entity,
+                    },
+                )
+                .expect("Unable to add unit");
 
-    unit */
+            println!("res: {:?}", res);
+        }
+    }
 }

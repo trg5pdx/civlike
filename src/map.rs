@@ -91,7 +91,8 @@ impl Map {
         for (i, tile) in self.tiles.iter_mut().enumerate() {
             if *tile == TileType::Ice || *tile == TileType::Mountain || *tile == TileType::Water {
                 self.blocked[i] = true;
-            } else { // Doing this to unmark tiles that were previously marked as blocked
+            } else {
+                // Doing this to unmark tiles that were previously marked as blocked
                 self.blocked[i] = false;
             }
         }

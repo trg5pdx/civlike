@@ -37,7 +37,7 @@ pub struct Name {
     pub name: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PlayerOrder {
     NoPlayer,
     PlayerOne,
@@ -55,19 +55,7 @@ pub struct Moving;
 
 #[derive(Component)]
 pub struct Unit {
+    pub owner: PlayerOrder,
     pub health: u8,
     pub strength: u8,
-}
-
-/// For denoting what player owns a specific unit
-#[derive(Component, Debug, Clone)]
-pub struct OwnedBy {
-    pub owner: Entity,
-}
-
-/// For keeping track of all the units owned by a player
-#[derive(Component, Debug, Clone)]
-pub struct UnitControl {
-    pub owned_by: Entity,
-    pub unit: Entity,
 }

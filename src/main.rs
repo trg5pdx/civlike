@@ -24,7 +24,6 @@ pub use unit::*;
 mod gui;
 mod heightmap;
 mod spawner;
-use spawner::*;
 
 mod visibility_system;
 use visibility_system::VisibilitySystem;
@@ -54,9 +53,6 @@ impl State {
 
         let mut vis = VisibilitySystem {};
         vis.run_now(&self.ecs);
-		
-        let mut owned = UnitOwnershipSystem {};
-        owned.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -116,8 +112,6 @@ fn main() -> BError {
     gs.ecs.register::<Unit>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
-    gs.ecs.register::<OwnedBy>();
-    gs.ecs.register::<UnitControl>();
     gs.ecs.register::<Moving>();
 
     let map = Map::new_map();
@@ -141,9 +135,14 @@ fn main() -> BError {
     // currently used for unit testing
     for i in 0..3 {
         let pos = (40 + i, 25 - i);
-        let unit_entity = spawner::unit(&mut gs.ecs, pos, format!("Unit{}", i + 1), range);
+        let unit_entity = spawner::unit(
+            &mut gs.ecs,
+            pos,
+            format!("Unit{}", i + 1),
+            range,
+            PlayerOrder::PlayerOne,
+        );
         gs.ecs.insert(unit_entity);
-        own_unit(&mut gs.ecs, pos);
     }
 
     main_loop(context, gs)

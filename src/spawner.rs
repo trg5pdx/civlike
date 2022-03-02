@@ -1,5 +1,5 @@
-use crate::{BlocksTile, Name, Player, Position, Renderable, Unit, UnitControl, Viewshed};
 use crate::PlayerOrder::*;
+use crate::{BlocksTile, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -15,9 +15,7 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
             bg: RGB::named(BLACK),
             render_order: 0,
         })
-        .with(Player {
-            order: PlayerOne,
-        })
+        .with(Player { order: PlayerOne })
         .with(Viewshed {
             visible_tiles: Vec::new(),
             range: 0, // Setting cursor range to 0 to allow the cursor to walk through revealed tiles & not reveal new territory
@@ -29,7 +27,13 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
         .build()
 }
 
-pub fn unit(ecs: &mut World, position: (i32, i32), name: String, range: i32) -> Entity {
+pub fn unit(
+    ecs: &mut World,
+    position: (i32, i32),
+    name: String,
+    range: i32,
+    player: PlayerOrder,
+) -> Entity {
     ecs.create_entity()
         .with(Position {
             x: position.0,
@@ -42,6 +46,7 @@ pub fn unit(ecs: &mut World, position: (i32, i32), name: String, range: i32) -> 
             render_order: 1,
         })
         .with(Unit {
+            owner: player,
             health: 20,
             strength: 8,
         })
@@ -53,30 +58,4 @@ pub fn unit(ecs: &mut World, position: (i32, i32), name: String, range: i32) -> 
             dirty: true,
         })
         .build()
-}
-
-pub fn own_unit(ecs: &mut World, pos: (i32, i32)) {
-    let mut controlled_by = ecs.write_storage::<UnitControl>();
-    let player_entity = ecs.fetch::<Entity>();
-    let entities = ecs.entities();
-    let units = ecs.read_storage::<Unit>();
-    let positions = ecs.read_storage::<Position>();
-    let names = ecs.read_storage::<Name>();
-
-    for (unit_entity, _unit, position, name) in (&entities, &units, &positions, &names).join() {
-        if position.x == pos.0 && position.y == pos.1 {
-            println!("found: {}", name.name);
-            let res = controlled_by
-                .insert(
-                    *player_entity,
-                    UnitControl {
-                        owned_by: *player_entity,
-                        unit: unit_entity,
-                    },
-                )
-                .expect("Unable to add unit");
-
-            println!("res: {:?}", res);
-        }
-    }
 }

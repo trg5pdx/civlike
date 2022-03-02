@@ -4,11 +4,10 @@
 //!
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
-use crate::{
-    xy_idx, Map, Moving, Name, OwnedBy, Player, Position, State, TileType, Unit, VIEW_HEIGHT,
-    VIEW_WIDTH,
-};
 use crate::PlayerOrder;
+use crate::{
+    xy_idx, Map, Moving, Name, Player, Position, State, TileType, Unit, VIEW_HEIGHT, VIEW_WIDTH,
+};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -34,25 +33,24 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let units = ecs.read_storage::<Unit>();
     let moving = ecs.read_storage::<Moving>();
 
-    for (_player, cursor_pos) in (&player, &position).join() { 
-        let mut pos: Option<Position> = None; 
+    for (_player, cursor_pos) in (&player, &position).join() {
+        let mut pos: Option<Position> = None;
         let location;
         let tile;
         let controlled;
 
         for (_mover, _unit, unit_pos) in (&moving, &units, &position).join() {
-            pos = Some(*unit_pos);  
+            pos = Some(*unit_pos);
         }
 
-        if let None = pos {
-            location = format!("Pos: ({}. {})", cursor_pos.x, cursor_pos.y);
-            tile = map.tiles[xy_idx(cursor_pos.x, cursor_pos.y)]; // COME BACK TO THIS
-            controlled = &map.claimed_tiles[xy_idx(cursor_pos.x, cursor_pos.y)];
-        } else {
-            let unit_pos = pos.unwrap();
+        if let Some(unit_pos) = pos {
             location = format!("Pos: ({}, {})", unit_pos.x, unit_pos.y);
             tile = map.tiles[xy_idx(unit_pos.x, unit_pos.y)]; // COME BACK TO THIS
             controlled = &map.claimed_tiles[xy_idx(unit_pos.x, unit_pos.y)];
+        } else {
+            location = format!("Pos: ({}. {})", cursor_pos.x, cursor_pos.y);
+            tile = map.tiles[xy_idx(cursor_pos.x, cursor_pos.y)]; // COME BACK TO THIS
+            controlled = &map.claimed_tiles[xy_idx(cursor_pos.x, cursor_pos.y)];
         }
 
         let tile_str = match tile {
@@ -63,7 +61,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             TileType::Water => "Water".to_string(),
             TileType::Ice => "Ice".to_string(),
         };
-        
+
         // Need to come back to this, the compiler wanted me ot make the enum snake case but here
         // it wanted it to be camel case, and they complained about not using them
         let claims = match controlled {
@@ -94,7 +92,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             RGB::named(BLACK),
             &claims,
         );
-        
+
         for (unit, unit_pos) in (&units, &position).join() {
             if (unit_pos.x == cursor_pos.x) && (unit_pos.y == cursor_pos.y) {
                 let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
@@ -119,14 +117,22 @@ pub enum UnitMenuResult {
 
 // Rename this function to be something more descriptive
 pub fn show_units(gs: &mut State, ctx: &mut BTerm) -> UnitMenuResult {
-    let player_entity = gs.ecs.fetch::<Entity>();
+    let players = gs.ecs.read_storage::<Player>();
+    let units = gs.ecs.read_storage::<Unit>();
     let names = gs.ecs.read_storage::<Name>();
-    let owner = gs.ecs.read_storage::<OwnedBy>();
     let entities = gs.ecs.entities();
 
-    let unit_list = (&owner, &names)
+    let mut player_enum: Option<PlayerOrder> = None;
+
+    for (_entity, player) in (&entities, &players).join() {
+        player_enum = Some(player.order.clone());
+    }
+
+    let player_enum = player_enum.unwrap();
+
+    let unit_list = (&units, &entities)
         .join()
-        .filter(|unit| unit.0.owner == *player_entity);
+        .filter(|unit| unit.0.owner == player_enum);
     let count = unit_list.count();
 
     let mut owned_units: Vec<Entity> = Vec::new();
@@ -155,9 +161,9 @@ pub fn show_units(gs: &mut State, ctx: &mut BTerm) -> UnitMenuResult {
         "ESCAPE to cancel",
     );
 
-    for (i, (_owned, name, entity)) in (&owner, &names, &entities)
+    for (i, (_unit, name, entity)) in (&units, &names, &entities)
         .join()
-        .filter(|unit| unit.0.owner == *player_entity)
+        .filter(|unit| unit.0.owner == player_enum)
         .enumerate()
     {
         ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('('));

@@ -6,7 +6,7 @@
 //!
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
-use crate::{get_unit, xy_idx, Map, Player, Position, RunState, State, TileType, Viewshed, World};
+use crate::{xy_idx, Map, Player, Position, RunState, State, TileType, Viewshed, World};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
@@ -58,7 +58,6 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::D => try_move_player(1, 0, &mut gs.ecs),
             VirtualKeyCode::W => try_move_player(0, -1, &mut gs.ecs),
             VirtualKeyCode::S => try_move_player(0, 1, &mut gs.ecs),
-            VirtualKeyCode::G => get_unit(&mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowUnits,
             VirtualKeyCode::Escape => std::process::exit(0),
             _ => return RunState::Paused,

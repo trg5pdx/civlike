@@ -6,8 +6,7 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::{
-    teleport_player, xy_idx, Map, Moving, OwnedBy, Position, RunState, State, Unit, UnitControl,
-    Viewshed, World, Player
+    teleport_player, xy_idx, Map, Moving, Player, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -16,7 +15,8 @@ use std::cmp::{max, min};
 // Doing this a dumb way, I copy pasted this from try_move_player, go back and fix this you idiot
 pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
-    let mut units = ecs.write_storage::<Unit>(); let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let mut units = ecs.write_storage::<Unit>();
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
     let moving_marker = ecs.read_storage::<Moving>();
     let map = ecs.fetch::<Map>();
 
@@ -78,68 +78,6 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     RunState::MoveUnit
 }
 
-pub struct UnitOwnershipSystem {}
-
-// Using the roguelike tutorial section on the inventory system as a guide for setting
-// up the ability for players to control multiple units
-impl<'a> System<'a> for UnitOwnershipSystem {
-    #[allow(clippy::type_complexity)]
-    type SystemData = (
-        ReadExpect<'a, Entity>,
-        WriteStorage<'a, UnitControl>,
-        WriteStorage<'a, Position>,
-        WriteStorage<'a, OwnedBy>,
-    );
-    fn run(&mut self, data: Self::SystemData) {
-        let (_player_entity, mut unit_control, _positions, mut owner) = data;
-
-        for owned in unit_control.join() {
-            owner
-                .insert(
-                    owned.unit,
-                    OwnedBy {
-                        owner: owned.owned_by,
-                    },
-                )
-                .expect("unable to own");
-        }
-
-        unit_control.clear();
-    }
-}
-
-pub fn get_unit(ecs: &mut World) {
-    let player_pos = ecs.fetch::<Point>();
-    let player_entity = ecs.fetch::<Entity>();
-    let entities = ecs.entities();
-    let units = ecs.read_storage::<Unit>();
-    let positions = ecs.read_storage::<Position>();
-
-    let mut target_unit: Option<Entity> = None;
-
-    for (unit_entity, _unit, position) in (&entities, &units, &positions).join() {
-        if position.x == player_pos.x && position.y == player_pos.y {
-            target_unit = Some(unit_entity);
-        }
-    }
-
-    match target_unit {
-        None => println!("no unit"),
-        Some(unit) => {
-            let mut controlled_by = ecs.write_storage::<UnitControl>();
-            controlled_by
-                .insert(
-                    *player_entity,
-                    UnitControl {
-                        owned_by: *player_entity,
-                        unit,
-                    },
-                )
-                .expect("Unable to add unit");
-        }
-    }
-}
-
 pub fn claim_tile(ecs: &mut World) {
     let units = ecs.read_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
@@ -148,9 +86,9 @@ pub fn claim_tile(ecs: &mut World) {
     let entities = ecs.entities();
     let mut map = ecs.fetch_mut::<Map>();
 
-    for (_unit, pos, _move) in (&units, &positions, &moving).join() {     
+    for (_unit, pos, _move) in (&units, &positions, &moving).join() {
         for (_player_entity, player) in (&entities, &players).join() {
-            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order.clone(); 
+            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order.clone();
         }
     }
 }

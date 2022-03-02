@@ -1,4 +1,5 @@
 use crate::{BlocksTile, Name, Player, Position, Renderable, Unit, UnitControl, Viewshed};
+use crate::PlayerOrder::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -14,7 +15,9 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
             bg: RGB::named(BLACK),
             render_order: 0,
         })
-        .with(Player {})
+        .with(Player {
+            order: PlayerOne,
+        })
         .with(Viewshed {
             visible_tiles: Vec::new(),
             range: 0, // Setting cursor range to 0 to allow the cursor to walk through revealed tiles & not reveal new territory

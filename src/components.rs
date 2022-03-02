@@ -15,7 +15,7 @@ pub struct Viewshed {
     pub dirty: bool,
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Clone, Copy)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
@@ -37,8 +37,17 @@ pub struct Name {
     pub name: String,
 }
 
+#[derive(Debug, Clone)]
+pub enum PlayerOrder {
+    NoPlayer,
+    PlayerOne,
+    PlayerTwo,
+}
+
 #[derive(Component, Debug)]
-pub struct Player {}
+pub struct Player {
+    pub order: PlayerOrder,
+}
 
 /// Used for marking a unit as being movable
 #[derive(Component, Debug)]

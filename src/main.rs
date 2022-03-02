@@ -54,7 +54,7 @@ impl State {
 
         let mut vis = VisibilitySystem {};
         vis.run_now(&self.ecs);
-
+		
         let mut owned = UnitOwnershipSystem {};
         owned.run_now(&self.ecs);
 

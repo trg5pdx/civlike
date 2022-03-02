@@ -5,6 +5,8 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::heightmap::generate_heightmap;
+use crate::PlayerOrder;
+use crate::PlayerOrder::*;
 use bracket_lib::prelude::*;
 use specs::Entity;
 
@@ -39,6 +41,7 @@ pub struct Map {
     pub visible_tiles: Vec<bool>,
     pub blocked: Vec<bool>,
     pub tile_content: Vec<Vec<Entity>>,
+    pub claimed_tiles: Vec<PlayerOrder>,
 }
 
 impl Map {
@@ -52,6 +55,7 @@ impl Map {
             visible_tiles: vec![false; MAPCOUNT],
             blocked: vec![false; MAPCOUNT],
             tile_content: vec![Vec::new(); MAPCOUNT],
+            claimed_tiles: vec![NoPlayer; MAPCOUNT],
         };
 
         let perlin = generate_heightmap();

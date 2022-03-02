@@ -7,7 +7,7 @@
 
 use crate::{
     teleport_player, xy_idx, Map, Moving, OwnedBy, Position, RunState, State, Unit, UnitControl,
-    Viewshed, World,
+    Viewshed, World, Player
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -16,8 +16,7 @@ use std::cmp::{max, min};
 // Doing this a dumb way, I copy pasted this from try_move_player, go back and fix this you idiot
 pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
-    let mut units = ecs.write_storage::<Unit>();
-    let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let mut units = ecs.write_storage::<Unit>(); let mut viewsheds = ecs.write_storage::<Viewshed>();
     let moving_marker = ecs.read_storage::<Moving>();
     let map = ecs.fetch::<Map>();
 
@@ -66,6 +65,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::D => try_move_unit(1, 0, &mut gs.ecs),
             VirtualKeyCode::W => try_move_unit(0, -1, &mut gs.ecs),
             VirtualKeyCode::S => try_move_unit(0, 1, &mut gs.ecs),
+            VirtualKeyCode::G => claim_tile(&mut gs.ecs),
             VirtualKeyCode::C => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
                 let pos = unmark_moving_unit(&mut gs.ecs).unwrap();
@@ -136,6 +136,21 @@ pub fn get_unit(ecs: &mut World) {
                     },
                 )
                 .expect("Unable to add unit");
+        }
+    }
+}
+
+pub fn claim_tile(ecs: &mut World) {
+    let units = ecs.read_storage::<Unit>();
+    let positions = ecs.read_storage::<Position>();
+    let moving = ecs.read_storage::<Moving>();
+    let players = ecs.read_storage::<Player>();
+    let entities = ecs.entities();
+    let mut map = ecs.fetch_mut::<Map>();
+
+    for (_unit, pos, _move) in (&units, &positions, &moving).join() {     
+        for (_player_entity, player) in (&entities, &players).join() {
+            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order.clone(); 
         }
     }
 }

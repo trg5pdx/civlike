@@ -8,6 +8,7 @@ use crate::{
     xy_idx, Map, Moving, Name, OwnedBy, Player, Position, State, TileType, Unit, VIEW_HEIGHT,
     VIEW_WIDTH,
 };
+use crate::PlayerOrder;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -30,11 +31,29 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let position = ecs.read_storage::<Position>();
     let player = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
-    let unit = ecs.read_storage::<Unit>();
+    let units = ecs.read_storage::<Unit>();
+    let moving = ecs.read_storage::<Moving>();
 
-    for (_player, pos) in (&player, &position).join() {
-        let location = format!("Pos: ({}. {})", pos.x, pos.y);
-        let tile = map.tiles[xy_idx(pos.x, pos.y)]; // COME BACK TO THIS
+    for (_player, cursor_pos) in (&player, &position).join() { 
+        let mut pos: Option<Position> = None; 
+        let location;
+        let tile;
+        let controlled;
+
+        for (_mover, _unit, unit_pos) in (&moving, &units, &position).join() {
+            pos = Some(*unit_pos);  
+        }
+
+        if let None = pos {
+            location = format!("Pos: ({}. {})", cursor_pos.x, cursor_pos.y);
+            tile = map.tiles[xy_idx(cursor_pos.x, cursor_pos.y)]; // COME BACK TO THIS
+            controlled = &map.claimed_tiles[xy_idx(cursor_pos.x, cursor_pos.y)];
+        } else {
+            let unit_pos = pos.unwrap();
+            location = format!("Pos: ({}, {})", unit_pos.x, unit_pos.y);
+            tile = map.tiles[xy_idx(unit_pos.x, unit_pos.y)]; // COME BACK TO THIS
+            controlled = &map.claimed_tiles[xy_idx(unit_pos.x, unit_pos.y)];
+        }
 
         let tile_str = match tile {
             TileType::Mountain => "Mountain".to_string(),
@@ -43,6 +62,14 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             TileType::Coast => "Coast".to_string(),
             TileType::Water => "Water".to_string(),
             TileType::Ice => "Ice".to_string(),
+        };
+        
+        // Need to come back to this, the compiler wanted me ot make the enum snake case but here
+        // it wanted it to be camel case, and they complained about not using them
+        let claims = match controlled {
+            PlayerOrder::NoPlayer => "Unclaimed".to_string(),
+            PlayerOrder::PlayerOne => "Owner: Player1".to_string(),
+            PlayerOrder::PlayerTwo => "Owner: Player2".to_string(),
         };
 
         // Write out the tile type and the current position to the gui box
@@ -60,9 +87,16 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             RGB::named(BLACK),
             &tile_str.to_string(),
         );
-
-        for (unit, unit_pos) in (&unit, &position).join() {
-            if (unit_pos.x == pos.x) && (unit_pos.y == pos.y) {
+        ctx.print_color(
+            start_x + 1,
+            start_y + 3,
+            RGB::named(YELLOW),
+            RGB::named(BLACK),
+            &claims,
+        );
+        
+        for (unit, unit_pos) in (&units, &position).join() {
+            if (unit_pos.x == cursor_pos.x) && (unit_pos.y == cursor_pos.y) {
                 let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
                 ctx.print_color(
                     start_x + 1,

@@ -1,5 +1,5 @@
 use crate::PlayerOrder::*;
-use crate::{BlocksTile, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed};
+use crate::{BlocksTile, Fort, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -57,5 +57,22 @@ pub fn unit(
             range,
             dirty: true,
         })
+        .build()
+}
+
+pub fn fort(ecs: &mut World, position: (i32, i32), name: String, owner: PlayerOrder) -> Entity {
+    ecs.create_entity()
+        .with(Position {
+            x: position.0,
+            y: position.1,
+        })
+        .with(Renderable {
+            glyph: to_cp437('M'),
+            fg: RGB::named(BROWN1),
+            bg: RGB::named(BLACK),
+            render_order: 1,
+        })
+        .with(Fort { owner, defense: 10 })
+        .with(Name { name })
         .build()
 }

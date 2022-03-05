@@ -21,6 +21,9 @@ pub use player::*;
 mod unit;
 pub use unit::*;
 
+mod fort;
+pub use fort::*;
+
 mod gui;
 mod heightmap;
 mod spawner;
@@ -39,6 +42,8 @@ pub enum RunState {
     MoveCursor,
     MoveUnit,
     ShowUnits,
+    SelectedFort,
+    ShowForts,
 }
 
 pub struct State {
@@ -74,13 +79,27 @@ impl GameState for State {
                 self.runstate = unit_input(self, ctx);
             }
             RunState::ShowUnits => {
-                let result = gui::show_units(self, ctx);
+                let result = gui::unit_list(self, ctx);
                 match result {
-                    gui::UnitMenuResult::Cancel => self.runstate = RunState::Paused,
-                    gui::UnitMenuResult::Selected => {
+                    gui::MenuResult::Cancel => self.runstate = RunState::Paused,
+                    gui::MenuResult::Selected => {
                         self.runstate = RunState::MoveUnit;
                     }
-                    gui::UnitMenuResult::NoResponse => {}
+                    gui::MenuResult::NoResponse => {}
+                }
+            }
+            RunState::SelectedFort => {
+                self.run_systems();
+                self.runstate = fort_input(self, ctx);
+            }
+            RunState::ShowForts => {
+                let result = gui::fort_list(self, ctx);
+                match result {
+                    gui::MenuResult::Cancel => self.runstate = RunState::Paused,
+                    gui::MenuResult::Selected => {
+                        self.runstate = RunState::SelectedFort;
+                    }
+                    gui::MenuResult::NoResponse => {}
                 }
             }
             _ => {
@@ -110,9 +129,11 @@ fn main() -> BError {
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Player>();
     gs.ecs.register::<Unit>();
+    gs.ecs.register::<Fort>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<Moving>();
+    gs.ecs.register::<Selected>();
 
     let map = Map::new_map();
 
@@ -131,6 +152,14 @@ fn main() -> BError {
 
     let player_entity = spawner::player(&mut gs.ecs, player_pos);
     gs.ecs.insert(player_entity);
+
+    let fort_entity = spawner::fort(
+        &mut gs.ecs,
+        player_pos,
+        "Fort1".to_string(),
+        PlayerOrder::PlayerOne,
+    );
+    gs.ecs.insert(fort_entity);
 
     // currently used for unit testing
     for i in 0..3 {

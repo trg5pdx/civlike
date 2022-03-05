@@ -49,13 +49,23 @@ pub struct Player {
     pub order: PlayerOrder,
 }
 
-/// Used for marking a unit as being movable
-#[derive(Component, Debug)]
-pub struct Moving;
-
 #[derive(Component)]
 pub struct Unit {
     pub owner: PlayerOrder,
     pub health: u8,
     pub strength: u8,
 }
+
+/// Used for marking a unit as being movable
+#[derive(Component)]
+pub struct Moving;
+
+#[derive(Component)]
+pub struct Fort {
+    pub owner: PlayerOrder,
+    pub defense: u8,
+}
+
+/// Used for marking which fort is currently selected by the player
+#[derive(Component)]
+pub struct Selected;

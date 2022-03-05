@@ -6,13 +6,13 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::{
-    teleport_player, xy_idx, Map, Moving, Player, Position, RunState, State, Unit, Viewshed, World,
+    teleport_player, xy_idx, Map, Moving, Player, Position, RunState, State, Unit, Viewshed, World, PlayerOrder
 };
+use crate::spawner::*;
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-// Doing this a dumb way, I copy pasted this from try_move_player, go back and fix this you idiot
 pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
@@ -66,7 +66,8 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::W => try_move_unit(0, -1, &mut gs.ecs),
             VirtualKeyCode::S => try_move_unit(0, 1, &mut gs.ecs),
             VirtualKeyCode::G => claim_tile(&mut gs.ecs),
-            VirtualKeyCode::C => {
+            VirtualKeyCode::B => { return build_fort(&mut gs.ecs); }, 
+            VirtualKeyCode::I => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
                 let pos = unmark_moving_unit(&mut gs.ecs).unwrap();
                 teleport_player(pos, &mut gs.ecs);
@@ -91,4 +92,54 @@ pub fn claim_tile(ecs: &mut World) {
             map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order.clone();
         }
     }
+}
+
+fn build_fort(ecs: &mut World) -> RunState {
+    let mut player_order: Option<PlayerOrder> = None;
+    let name: String = "Fort 2".to_string(); // Doing this until I setup a fort count inside player
+    let mut new_fort_pos: Option<(i32, i32)> = None;
+
+    /* 
+        Scoping this to prevent errors from the borrow checker since I'm moving ecs into unit,
+        and inserting the unit into the world. Got the idea from the rust roguelike tutorial
+
+        Section: User Interface; Notifying of Deaths
+        Link: https://bfnightly.bracketproductions.com/rustbook/chapter_8.html
+    */
+    {
+        let players = ecs.read_storage::<Player>();
+        let entities = ecs.entities();
+        let positions = ecs.read_storage::<Position>();
+        let units = ecs.read_storage::<Unit>();
+        let moving_units = ecs.read_storage::<Moving>();
+        let mut map = ecs.fetch_mut::<Map>();
+
+        for (player, _entity) in (&players, &entities).join() {
+            player_order = Some(player.order.clone());
+        }
+        
+        if let Some(ref owner) = player_order {
+            for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
+                let idx = xy_idx(pos.x, pos.y);
+                if map.claimed_tiles[idx] == *owner {
+                    new_fort_pos = Some((pos.x, pos.y));
+                }
+
+                for x in pos.x - 1..=pos.x + 1 {
+                    for y in pos.y - 1..=pos.y + 1 {
+                        let idx = xy_idx(x, y);
+                        map.claimed_tiles[idx] = (*owner).clone();
+                    }
+                }
+            }
+        }
+    }
+
+    if let Some(pos) = new_fort_pos {
+        if let Some(player) = player_order {
+            let fort = fort(ecs, pos, name, player);
+            ecs.insert(fort);
+        }
+    }
+    RunState::MoveUnit
 }

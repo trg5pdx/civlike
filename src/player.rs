@@ -59,6 +59,7 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::W => try_move_player(0, -1, &mut gs.ecs),
             VirtualKeyCode::S => try_move_player(0, 1, &mut gs.ecs),
             VirtualKeyCode::I => return RunState::ShowUnits,
+            VirtualKeyCode::F => return RunState::ShowForts,
             VirtualKeyCode::Escape => std::process::exit(0),
             _ => return RunState::Paused,
         },

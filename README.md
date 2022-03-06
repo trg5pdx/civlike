@@ -44,6 +44,6 @@ Fort Mode:
 # Credits
 
 A big thank you to Herbert Wolverson for writing the tutorial on making a roguelike in rust      
-[Rust Roguelike Tutorial](https://bfnightly.bracketproductions.com/rustbook/chapter_0.html)
-[Bracket Noise examples used in src/heightmap.rs](https://github.com/amethyst/bracket-lib/tree/master/bracket-noise)
-[Tutorial on generating 2D maps using heightmaps](https://gillesleblanc.wordpress.com/2012/10/16/creating-a-random-2d-game-world-map/)
+[Rust Roguelike Tutorial](https://bfnightly.bracketproductions.com/rustbook/chapter_0.html)     
+[Bracket Noise examples used in src/heightmap.rs](https://github.com/amethyst/bracket-lib/tree/master/bracket-noise)      
+[Tutorial on generating 2D maps using heightmaps](https://gillesleblanc.wordpress.com/2012/10/16/creating-a-random-2d-game-world-map/)      

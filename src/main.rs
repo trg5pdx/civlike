@@ -146,33 +146,7 @@ fn main() -> BError {
         range = 300;
     }
 
-    let player_pos = (40, 25);
-
-    gs.ecs.insert(Point::new(player_pos.0, player_pos.1));
-
-    let player_entity = spawner::player(&mut gs.ecs, player_pos);
-    gs.ecs.insert(player_entity);
-
-    let fort_entity = spawner::fort(
-        &mut gs.ecs,
-        player_pos,
-        "Fort1".to_string(),
-        PlayerOrder::PlayerOne,
-    );
-    gs.ecs.insert(fort_entity);
-
-    // currently used for unit testing
-    for i in 0..3 {
-        let pos = (40 + i, 25 - i);
-        let unit_entity = spawner::unit(
-            &mut gs.ecs,
-            pos,
-            format!("Unit{}", i + 1),
-            range,
-            PlayerOrder::PlayerOne,
-        );
-        gs.ecs.insert(unit_entity);
-    }
+    spawner::spawn_player_entities(&mut gs.ecs, (40, 25), range, PlayerOrder::PlayerOne);
 
     main_loop(context, gs)
 }

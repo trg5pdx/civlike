@@ -13,10 +13,9 @@ use specs::prelude::*;
 
 pub fn build_unit(ecs: &mut World) -> RunState {
     let mut player_order: Option<PlayerOrder> = None;
-    let name: String = "Unit A".to_string(); // Doing this until I setup a unit count inside player
     let mut new_unit_pos: Option<(i32, i32)> = None;
-    
-    /* 
+
+    /*
         Scoping this to prevent errors from the borrow checker since I'm moving ecs into unit,
         and inserting the unit into the world. Got the idea from the rust roguelike tutorial
 
@@ -32,7 +31,7 @@ pub fn build_unit(ecs: &mut World) -> RunState {
         let map = ecs.fetch::<Map>();
 
         for (player, _entity) in (&players, &entities).join() {
-            player_order = Some(player.order.clone());
+            player_order = Some(player.order);
         }
 
         if let Some(ref owner) = player_order {
@@ -46,6 +45,17 @@ pub fn build_unit(ecs: &mut World) -> RunState {
 
     if let Some(pos) = new_unit_pos {
         if let Some(player) = player_order {
+            let mut unit_counter = 0;
+            {
+                let mut players = ecs.write_storage::<Player>();
+                let entities = ecs.entities();
+
+                for (player, _entity) in (&mut players, &entities).join() {
+                    player.unit_count += 1;
+                    unit_counter = player.unit_count;
+                }
+            }
+            let name = format!("Unit{}", unit_counter);
             let unit = unit(ecs, pos, name, 8, player);
             ecs.insert(unit);
         }

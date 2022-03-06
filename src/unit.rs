@@ -5,10 +5,11 @@
 //!
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
-use crate::{
-    teleport_player, xy_idx, Map, Moving, Player, Position, RunState, State, Unit, Viewshed, World, PlayerOrder
-};
 use crate::spawner::*;
+use crate::{
+    teleport_player, xy_idx, Map, Moving, Player, PlayerOrder, Position, RunState, State, Unit,
+    Viewshed, World,
+};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
@@ -66,7 +67,9 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::W => try_move_unit(0, -1, &mut gs.ecs),
             VirtualKeyCode::S => try_move_unit(0, 1, &mut gs.ecs),
             VirtualKeyCode::G => claim_tile(&mut gs.ecs),
-            VirtualKeyCode::B => { return build_fort(&mut gs.ecs); }, 
+            VirtualKeyCode::B => {
+                return build_fort(&mut gs.ecs);
+            }
             VirtualKeyCode::I => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
                 let pos = unmark_moving_unit(&mut gs.ecs).unwrap();
@@ -89,17 +92,16 @@ pub fn claim_tile(ecs: &mut World) {
 
     for (_unit, pos, _move) in (&units, &positions, &moving).join() {
         for (_player_entity, player) in (&entities, &players).join() {
-            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order.clone();
+            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order;
         }
     }
 }
 
 fn build_fort(ecs: &mut World) -> RunState {
     let mut player_order: Option<PlayerOrder> = None;
-    let name: String = "Fort 2".to_string(); // Doing this until I setup a fort count inside player
     let mut new_fort_pos: Option<(i32, i32)> = None;
 
-    /* 
+    /*
         Scoping this to prevent errors from the borrow checker since I'm moving ecs into unit,
         and inserting the unit into the world. Got the idea from the rust roguelike tutorial
 
@@ -115,9 +117,9 @@ fn build_fort(ecs: &mut World) -> RunState {
         let mut map = ecs.fetch_mut::<Map>();
 
         for (player, _entity) in (&players, &entities).join() {
-            player_order = Some(player.order.clone());
+            player_order = Some(player.order);
         }
-        
+
         if let Some(ref owner) = player_order {
             for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
@@ -128,7 +130,7 @@ fn build_fort(ecs: &mut World) -> RunState {
                 for x in pos.x - 1..=pos.x + 1 {
                     for y in pos.y - 1..=pos.y + 1 {
                         let idx = xy_idx(x, y);
-                        map.claimed_tiles[idx] = (*owner).clone();
+                        map.claimed_tiles[idx] = *owner;
                     }
                 }
             }
@@ -137,6 +139,17 @@ fn build_fort(ecs: &mut World) -> RunState {
 
     if let Some(pos) = new_fort_pos {
         if let Some(player) = player_order {
+            let mut fort_counter = 0;
+            {
+                let mut players = ecs.write_storage::<Player>();
+                let entities = ecs.entities();
+
+                for (player, _entity) in (&mut players, &entities).join() {
+                    player.fort_count += 1;
+                    fort_counter = player.fort_count;
+                }
+            }
+            let name = format!("Fort{}", fort_counter);
             let fort = fort(ecs, pos, name, player);
             ecs.insert(fort);
         }

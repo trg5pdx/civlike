@@ -1,5 +1,7 @@
 use crate::PlayerOrder::*;
-use crate::{BlocksTile, Fort, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed};
+use crate::{
+    xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed,
+};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -15,7 +17,11 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
             bg: RGB::named(BLACK),
             render_order: 0,
         })
-        .with(Player { order: PlayerOne })
+        .with(Player {
+            order: PlayerOne,
+            unit_count: 0,
+            fort_count: 0,
+        })
         .with(Viewshed {
             visible_tiles: Vec::new(),
             range: 0, // Setting cursor range to 0 to allow the cursor to walk through revealed tiles & not reveal new territory
@@ -75,4 +81,59 @@ pub fn fort(ecs: &mut World, position: (i32, i32), name: String, owner: PlayerOr
         .with(Fort { owner, defense: 10 })
         .with(Name { name })
         .build()
+}
+
+pub fn spawn_player_entities(
+    ecs: &mut World,
+    spawn_point: (i32, i32),
+    range: i32,
+    player_num: PlayerOrder,
+) {
+    let mut unit_counter = 0;
+    {
+        // Adding the player to the game using the spawn_point established outside this scope
+        ecs.insert(Point::new(spawn_point.0, spawn_point.1));
+        let player_entity = player(ecs, spawn_point);
+        ecs.insert(player_entity);
+    }
+
+    {
+        // Claiming the tiles surrounding the fort being placed down
+        let mut map = ecs.fetch_mut::<Map>();
+        let (low_x, low_y) = (spawn_point.0 - 1, spawn_point.1 - 1);
+        let (high_x, high_y) = (spawn_point.0 + 1, spawn_point.1 + 1);
+        for x in low_x..=high_x {
+            for y in low_y..=high_y {
+                let idx = xy_idx(x, y);
+                map.claimed_tiles[idx] = player_num;
+            }
+        }
+    }
+
+    {
+        // Building the fort
+        let fort_entity = fort(ecs, spawn_point, "Fort1".to_string(), player_num);
+        ecs.insert(fort_entity);
+    }
+
+    for i in 0..3 {
+        // Placing down three units
+        unit_counter += 1;
+        let pos = (40 + i, 25 - i);
+        let unit_entity = unit(ecs, pos, format!("Unit{}", unit_counter), range, player_num);
+        ecs.insert(unit_entity);
+    }
+
+    {
+        // Getting the player struct and updating the unit and fort counts
+        let mut players = ecs.write_storage::<Player>();
+        let entities = ecs.entities();
+
+        for (player, _entity) in (&mut players, &entities).join() {
+            if player.order == player_num {
+                player.unit_count = unit_counter;
+                player.fort_count = 1;
+            }
+        }
+    }
 }

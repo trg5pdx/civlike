@@ -37,7 +37,7 @@ pub struct Name {
     pub name: String,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PlayerOrder {
     NoPlayer,
     PlayerOne,
@@ -47,6 +47,8 @@ pub enum PlayerOrder {
 #[derive(Component, Debug)]
 pub struct Player {
     pub order: PlayerOrder,
+    pub unit_count: u16,
+    pub fort_count: u16,
 }
 
 #[derive(Component)]

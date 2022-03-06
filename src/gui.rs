@@ -126,7 +126,7 @@ pub fn unit_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let mut player_enum: Option<PlayerOrder> = None;
 
     for (_entity, player) in (&entities, &players).join() {
-        player_enum = Some(player.order.clone());
+        player_enum = Some(player.order);
     }
 
     let player_enum = player_enum.unwrap();
@@ -211,7 +211,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let mut player_enum: Option<PlayerOrder> = None;
 
     for (_entity, player) in (&entities, &players).join() {
-        player_enum = Some(player.order.clone());
+        player_enum = Some(player.order);
     }
 
     let player_enum = player_enum.unwrap();

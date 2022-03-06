@@ -1,9 +1,11 @@
+use bracket_lib::prelude::*;
+use rand::{thread_rng, Rng};
+use specs::prelude::*;
+
 use crate::PlayerOrder::*;
 use crate::{
     xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed,
 };
-use bracket_lib::prelude::*;
-use specs::prelude::*;
 
 pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
     ecs.create_entity()
@@ -116,10 +118,11 @@ pub fn spawn_player_entities(
         ecs.insert(fort_entity);
     }
 
-    for i in 0..3 {
-        // Placing down three units
+    for _ in 0..3 {
         unit_counter += 1;
-        let pos = (40 + i, 25 - i);
+        let x_range = (spawn_point.0 - 2, spawn_point.0 + 2);
+        let y_range = (spawn_point.1 - 2, spawn_point.1 + 2);
+        let pos = generate_coordinates(ecs, x_range, y_range);
         let unit_entity = unit(ecs, pos, format!("Unit{}", unit_counter), range, player_num);
         ecs.insert(unit_entity);
     }
@@ -136,4 +139,24 @@ pub fn spawn_player_entities(
             }
         }
     }
+}
+
+pub fn generate_coordinates(ecs: &World, x_range: (i32, i32), y_range: (i32, i32)) -> (i32, i32) {
+    let map = ecs.fetch::<Map>();
+    let mut position: Option<(i32, i32)> = None;
+
+    while position.is_none() {
+        let mut rng = thread_rng();
+        let x: i32 = rng.gen_range(x_range.0..x_range.1);
+        let y: i32 = rng.gen_range(y_range.0..y_range.1);
+
+        let idx = xy_idx(x, y);
+
+        if !map.blocked[idx] {
+            position = Some((x, y));
+            break;
+        }
+    }
+
+    position.unwrap()
 }

@@ -10,8 +10,8 @@ use crate::PlayerOrder::*;
 use bracket_lib::prelude::*;
 use specs::Entity;
 
-pub const MAPWIDTH: usize = 120;
-pub const MAPHEIGHT: usize = 120;
+pub const MAPWIDTH: usize = 300;
+pub const MAPHEIGHT: usize = 300;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 pub const VIEW_WIDTH: usize = 60;

@@ -146,7 +146,11 @@ fn main() -> BError {
         range = 300;
     }
 
-    spawner::spawn_player_entities(&mut gs.ecs, (40, 25), range, PlayerOrder::PlayerOne);
+    let x_range: (i32, i32) = (0, (MAPWIDTH - 1) as i32);
+    let y_range: (i32, i32) = (0, (MAPHEIGHT - 1) as i32);
+
+    let position: (i32, i32) = spawner::generate_coordinates(&gs.ecs, x_range, y_range);
+    spawner::spawn_player_entities(&mut gs.ecs, position, range, PlayerOrder::PlayerOne);
 
     main_loop(context, gs)
 }

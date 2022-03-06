@@ -2,12 +2,11 @@ use bracket_lib::prelude::*;
 use rand::{thread_rng, Rng};
 use specs::prelude::*;
 
-use crate::PlayerOrder::*;
 use crate::{
     xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed,
 };
 
-pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
+pub fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
     ecs.create_entity()
         .with(Position {
             x: position.0,
@@ -20,7 +19,7 @@ pub fn player(ecs: &mut World, position: (i32, i32)) -> Entity {
             render_order: 0,
         })
         .with(Player {
-            order: PlayerOne,
+            order,
             unit_count: 0,
             fort_count: 0,
         })
@@ -95,7 +94,7 @@ pub fn spawn_player_entities(
     {
         // Adding the player to the game using the spawn_point established outside this scope
         ecs.insert(Point::new(spawn_point.0, spawn_point.1));
-        let player_entity = player(ecs, spawn_point);
+        let player_entity = player(ecs, spawn_point, player_num);
         ecs.insert(player_entity);
     }
 

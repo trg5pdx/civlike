@@ -26,20 +26,21 @@ Red background tiles: tiles that are claimed by player two
 
 # Controls
 
-[W/A/S/D] Movement controls for the cursor and units
+[W/A/S/D] Movement controls for the cursor and units      
 
 Cursor Mode:
-[I] Opens a menu listing the units a player currently owns, from there press the letter corresponding to the unit you wish to take over, and then you will switch to unit mode
-[F] Opens a menu listing the forts a player currently owns, from there press the letter corresponding to the fort you wish to take over, and then you will switch to fort mode
+[Esc] Closes the game      
+[I] Opens a menu listing the units a player currently owns, from there press the letter corresponding to the unit you wish to take over, and then you will switch to unit mode       
+[F] Opens a menu listing the forts a player currently owns, from there press the letter corresponding to the fort you wish to take over, and then you will switch to fort mode       
 
-Unit Mode:
-[I] Switch back to cursor mode
-[G] Claim a tile for the player
-[B] Build a fort on the current tile (Tile needs to be claimed)
+Unit Mode:       
+[I] Switch back to cursor mode        
+[G] Claim a tile for the player       
+[B] Build a fort on the current tile (Tile needs to be claimed)       
 
-Fort Mode:
-[B] Build a unit at the current fort, if the tile isn't currently occupied by another unit
-[I] Switch back to cursor mode
+Fort Mode:       
+[B] Build a unit at the current fort, if the tile isn't currently occupied by another unit      
+[I] Switch back to cursor mode       
 
 # Credits
 

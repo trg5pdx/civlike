@@ -14,7 +14,8 @@ use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
+/// Attempts to move a unit, checking if the tile the unit will end up on is blocked or not
+fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -38,7 +39,8 @@ pub fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
 }
 
 /// Used for removing the moving marker from a unit struct so it won't move the next time a unit gets moved
-pub fn unmark_moving_unit(ecs: &mut World) -> Option<Position> {
+/// Returns a position if it was successful to teleport the player to the location of the recently unmarked unit
+fn unmark_moving_unit(ecs: &mut World) -> Option<Position> {
     let entities = ecs.entities();
     let units = ecs.read_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
@@ -57,6 +59,10 @@ pub fn unmark_moving_unit(ecs: &mut World) -> Option<Position> {
     curr_pos
 }
 
+/* 
+COME BACK TO THIS AND WORK ON THE ERROR HANDLING BETTER
+*/
+/// Lets the player move a unit around, claim a tile, build a fort, or exit back to cursor mode
 pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     // Unit actions
     match ctx.key {
@@ -72,8 +78,10 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             }
             VirtualKeyCode::I => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
-                let pos = unmark_moving_unit(&mut gs.ecs).unwrap();
-                teleport_player(pos, &mut gs.ecs);
+                if let Some(pos) = unmark_moving_unit(&mut gs.ecs) {
+                    teleport_player(pos, &mut gs.ecs);
+                    return RunState::Paused;
+                }
                 return RunState::Paused;
             }
             _ => {}
@@ -82,7 +90,8 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     RunState::MoveUnit
 }
 
-pub fn claim_tile(ecs: &mut World) {
+/// Grabs the currently moving unit and claims the tile it's currently on if it isn't claimed already
+fn claim_tile(ecs: &mut World) {
     let units = ecs.read_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
     let moving = ecs.read_storage::<Moving>();
@@ -92,11 +101,15 @@ pub fn claim_tile(ecs: &mut World) {
 
     for (_unit, pos, _move) in (&units, &positions, &moving).join() {
         for (_player_entity, player) in (&entities, &players).join() {
-            map.claimed_tiles[xy_idx(pos.x, pos.y)] = player.order;
+            let idx = xy_idx(pos.x, pos.y);
+            if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
+                map.claimed_tiles[idx] = player.order;
+            }
         }
     }
 }
 
+/// Gets the curret location of a unit and if it's claimed by the current player, builds a fort there
 fn build_fort(ecs: &mut World) -> RunState {
     let mut player_order: Option<PlayerOrder> = None;
     let mut new_fort_pos: Option<(i32, i32)> = None;

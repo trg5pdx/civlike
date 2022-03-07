@@ -7,11 +7,12 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::spawner::*;
-use crate::{xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State, World};
+use crate::{xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State, World, teleport_player};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
-pub fn build_unit(ecs: &mut World) -> RunState {
+/// Builds a unit at the current fort is a unit isn't already present
+fn build_unit(ecs: &mut World) -> RunState {
     let mut player_order: Option<PlayerOrder> = None;
     let mut new_unit_pos: Option<(i32, i32)> = None;
 
@@ -64,13 +65,42 @@ pub fn build_unit(ecs: &mut World) -> RunState {
     RunState::Paused
 }
 
+/// Used for removing the moving marker from a unit struct so it won't move the next time a unit gets moved
+/// Returns a position if it was successful to teleport the player to the location of the recently unmarked unit
+fn unmark_selected_fort(ecs: &mut World) -> Option<Position> {
+    let entities = ecs.entities();
+    let forts = ecs.read_storage::<Fort>();
+    let positions = ecs.read_storage::<Position>();
+    let mut selected_marker = ecs.write_storage::<Selected>();
+
+    let mut curr_pos = None;
+
+    for (entity, _fort, pos) in (&entities, &forts, &positions).join() {
+        match selected_marker.remove(entity) {
+            None => {}
+            Some(_select) => {
+                curr_pos = Some(Position { x: pos.x, y: pos.y });
+            }
+        }
+    }
+    curr_pos
+}
+
+/* 
+COME BACK TO THIS AND WORK ON THE ERROR HANDLING BETTER
+*/
+/// Lets the player build a unit or exit back to cursor mode
 pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     // Unit actions
     match ctx.key {
         None => return RunState::SelectedFort, // Nothing happened
         Some(key) => match key {
-            VirtualKeyCode::B => return build_unit(&mut gs.ecs), // Will be used for building a unit
+            VirtualKeyCode::B => return build_unit(&mut gs.ecs),
             VirtualKeyCode::I => {
+                if let Some(pos) = unmark_selected_fort(&mut gs.ecs) {
+                    teleport_player(pos, &mut gs.ecs);
+                    return RunState::Paused;
+                }  
                 return RunState::Paused;
             }
             _ => {}

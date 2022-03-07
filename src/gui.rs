@@ -277,7 +277,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
                     let mut selected = gs.ecs.write_storage::<Selected>();
                     selected
                         .insert(player_forts[selection as usize], Selected {})
-                        .expect("Unable to mark unit as moving");
+                        .expect("Unable to mark fort as selected");
                     return MenuResult::Selected;
                 }
                 MenuResult::NoResponse

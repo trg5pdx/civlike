@@ -6,7 +6,7 @@ use crate::{
     xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed,
 };
 
-pub fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
+fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
     ecs.create_entity()
         .with(Position {
             x: position.0,

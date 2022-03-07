@@ -10,7 +10,7 @@ use crate::PlayerOrder::*;
 use bracket_lib::prelude::*;
 use specs::Entity;
 
-pub const MAPWIDTH: usize = 300;
+pub const MAPWIDTH: usize = 400;
 pub const MAPHEIGHT: usize = 300;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
@@ -28,11 +28,12 @@ pub enum TileType {
     Ice,
 }
 
-// Kept this outside of the Map impl so heightmap can still make use of it
+/// Uses the x/y coordinates to get the location of a tile in a 1 dimensional array; used for the tile map and the heightmap
 pub fn xy_idx(x: i32, y: i32) -> usize {
     (y as usize * MAPWIDTH) + x as usize
 }
 
+/// Contains all tiles of the map and includes tiles that are revealed, visible, blocked, or claimed by a player
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,

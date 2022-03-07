@@ -8,6 +8,7 @@ use bracket_lib::prelude::*;
 use specs::prelude::*;
 use specs_derive::*;
 
+/// Stores the tiles currently visible, and stores how many tiles out an entity can see
 #[derive(Component)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
@@ -15,12 +16,14 @@ pub struct Viewshed {
     pub dirty: bool,
 }
 
+/// Stores an x/y position for an entity
 #[derive(Component, Debug, Clone, Copy)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
+/// For recording how to render an entity and its color and background along with render order
 #[derive(Component)]
 pub struct Renderable {
     pub glyph: FontCharType,
@@ -37,6 +40,7 @@ pub struct Name {
     pub name: String,
 }
 
+/// Used to keep track of which player owns/claims what
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PlayerOrder {
     NoPlayer,
@@ -44,6 +48,7 @@ pub enum PlayerOrder {
     PlayerTwo,
 }
 
+/// Used for the cursor, keeps track of the player order, and how many units and forts that player has
 #[derive(Component, Debug)]
 pub struct Player {
     pub order: PlayerOrder,
@@ -51,6 +56,7 @@ pub struct Player {
     pub fort_count: u16,
 }
 
+/// Stores the health and strength of a unit and keeps track of who owns that unit
 #[derive(Component)]
 pub struct Unit {
     pub owner: PlayerOrder,
@@ -62,6 +68,7 @@ pub struct Unit {
 #[derive(Component)]
 pub struct Moving;
 
+/// Stores the forts defense and stores who owns that fort
 #[derive(Component)]
 pub struct Fort {
     pub owner: PlayerOrder,

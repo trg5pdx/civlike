@@ -36,6 +36,8 @@ use map_indexing_system::MapIndexingSystem;
 
 pub mod camera;
 
+/// Marks what state the games running in to allow the player to open their unit/fort lists
+/// and move their cursor around the map
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
     Paused,
@@ -46,6 +48,14 @@ pub enum RunState {
     ShowForts,
 }
 
+/// Used for returning why a move failed to happen
+pub enum FailedMoveReason {
+	TileBlocked,
+	UnableToGrabEntity,	
+}
+
+/// Contains the game world and all of it's entities within it, and an enum for denoting
+/// what state the game is currently in
 pub struct State {
     pub ecs: World,
     pub runstate: RunState,
@@ -104,6 +114,20 @@ impl GameState for State {
             }
             _ => {
                 self.runstate = player_input(self, ctx);
+            }
+        }
+    }
+}
+
+pub fn handle_move_result(res: Result<(i32, i32), FailedMoveReason>) {
+    match res {
+        Ok((x, y)) => {
+            println!("Moved entity to x: {} y: {}", x, y);
+        }
+        Err(e) => {
+            match e {
+                FailedMoveReason::TileBlocked => eprintln!("ERROR: Tile entity tried to move on is blocked"),
+                FailedMoveReason::UnableToGrabEntity => eprintln!("ERROR: Failed to grab entity"),
             }
         }
     }

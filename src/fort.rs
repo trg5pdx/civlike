@@ -7,7 +7,10 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::spawner::*;
-use crate::{xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State, World, teleport_player};
+use crate::{
+    teleport_player, xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State,
+    World,
+};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
@@ -86,23 +89,21 @@ fn unmark_selected_fort(ecs: &mut World) -> Option<Position> {
     curr_pos
 }
 
-/* 
-COME BACK TO THIS AND WORK ON THE ERROR HANDLING BETTER
-*/
 /// Lets the player build a unit or exit back to cursor mode
 pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
-    // Unit actions
     match ctx.key {
-        None => return RunState::SelectedFort, // Nothing happened
+        None => return RunState::SelectedFort,
         Some(key) => match key {
             VirtualKeyCode::B => return build_unit(&mut gs.ecs),
-            VirtualKeyCode::I => {
-                if let Some(pos) = unmark_selected_fort(&mut gs.ecs) {
+            VirtualKeyCode::I => match unmark_selected_fort(&mut gs.ecs) {
+                None => {
+                    panic!("ERROR: Failed to unmark selected fort")
+                }
+                Some(pos) => {
                     teleport_player(pos, &mut gs.ecs);
                     return RunState::Paused;
-                }  
-                return RunState::Paused;
-            }
+                }
+            },
             _ => {}
         },
     }

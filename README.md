@@ -69,6 +69,6 @@ Systems, which has helped me think about how to approach problems in a different
 Thank you to Bart Massey and Cassaundra Smith for the help they provided me throughout this project.     
 A big thank you to Herbert Wolverson for writing the tutorial on making a roguelike in rust      
 [Rust Roguelike Tutorial](https://bfnightly.bracketproductions.com/rustbook/chapter_0.html)     
-[Resource I used which led to learning about heightmaps](https://github.com/marukrap/RoguelikeDevResources)
+[Resource I used which led to learning about heightmaps](https://github.com/marukrap/RoguelikeDevResources)      
 [Bracket Noise examples used in src/heightmap.rs](https://github.com/amethyst/bracket-lib/tree/master/bracket-noise)      
 [Tutorial on generating 2D maps using heightmaps](https://gillesleblanc.wordpress.com/2012/10/16/creating-a-random-2d-game-world-map/)      

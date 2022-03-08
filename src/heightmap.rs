@@ -1,4 +1,4 @@
-//! Code for this comes from the perlin-fractal example from the bracket-noise crage
+//! Code for this comes from the perlin-fractal example from the bracket-noise crate
 //!
 //! Link: https://github.com/amethyst/bracket-lib/tree/master/bracket-noise
 
@@ -6,6 +6,9 @@ use crate::{xy_idx, MAPCOUNT, MAPHEIGHT, MAPWIDTH};
 use bracket_lib::prelude::RandomNumberGenerator;
 use bracket_noise::prelude::*;
 
+/// Generates a 2d heightmap populated with f32 values ranging from -1 to +1
+/// Used for mapping terrain tiles to positions in the map with the terrain tile being
+/// determined by the value generated at the same place in the heightmap
 pub fn generate_heightmap() -> Vec<f32> {
     let mut rng = RandomNumberGenerator::new();
 

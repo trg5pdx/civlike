@@ -7,23 +7,29 @@
 
 use crate::spawner::*;
 use crate::{
-    teleport_player, xy_idx, Map, Moving, Player, PlayerOrder, Position, RunState, State, Unit,
-    Viewshed, World,
+    handle_move_result, teleport_player, xy_idx, FailedMoveReason, Map, Moving, Player,
+    PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
 /// Attempts to move a unit, checking if the tile the unit will end up on is blocked or not
-fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
+fn try_move_unit(
+    delta_x: i32,
+    delta_y: i32,
+    ecs: &mut World,
+) -> Result<(i32, i32), FailedMoveReason> {
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let moving_marker = ecs.read_storage::<Moving>();
     let map = ecs.fetch::<Map>();
 
-    for (_unit, pos, viewshed, _moving) in
-        (&mut units, &mut positions, &mut viewsheds, &moving_marker).join()
+    if let Some((_unit, pos, viewshed, _moving)) =
+        (&mut units, &mut positions, &mut viewsheds, &moving_marker)
+            .join()
+            .next()
     {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
         if !map.blocked[destination_idx] {
@@ -32,10 +38,14 @@ fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) {
             pos.y = min(map.height, max(0, pos.y + delta_y));
             ppos.x = pos.x;
             ppos.y = pos.y;
-
             viewshed.dirty = true;
+
+            return Ok((pos.x, pos.y));
+        } else {
+            return Err(FailedMoveReason::TileBlocked);
         }
     }
+    Err(FailedMoveReason::UnableToGrabEntity)
 }
 
 /// Used for removing the moving marker from a unit struct so it won't move the next time a unit gets moved
@@ -59,30 +69,30 @@ fn unmark_moving_unit(ecs: &mut World) -> Option<Position> {
     curr_pos
 }
 
-/* 
-COME BACK TO THIS AND WORK ON THE ERROR HANDLING BETTER
-*/
 /// Lets the player move a unit around, claim a tile, build a fort, or exit back to cursor mode
 pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
-    // Unit actions
     match ctx.key {
-        None => return RunState::MoveUnit, // Nothing happened
+        None => return RunState::MoveUnit,
         Some(key) => match key {
-            VirtualKeyCode::A => try_move_unit(-1, 0, &mut gs.ecs),
-            VirtualKeyCode::D => try_move_unit(1, 0, &mut gs.ecs),
-            VirtualKeyCode::W => try_move_unit(0, -1, &mut gs.ecs),
-            VirtualKeyCode::S => try_move_unit(0, 1, &mut gs.ecs),
+            VirtualKeyCode::A => handle_move_result(try_move_unit(-1, 0, &mut gs.ecs)),
+            VirtualKeyCode::D => handle_move_result(try_move_unit(1, 0, &mut gs.ecs)),
+            VirtualKeyCode::W => handle_move_result(try_move_unit(0, -1, &mut gs.ecs)),
+            VirtualKeyCode::S => handle_move_result(try_move_unit(0, 1, &mut gs.ecs)),
             VirtualKeyCode::G => claim_tile(&mut gs.ecs),
             VirtualKeyCode::B => {
                 return build_fort(&mut gs.ecs);
             }
             VirtualKeyCode::I => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
-                if let Some(pos) = unmark_moving_unit(&mut gs.ecs) {
-                    teleport_player(pos, &mut gs.ecs);
-                    return RunState::Paused;
+                match unmark_moving_unit(&mut gs.ecs) {
+                    None => {
+                        panic!("ERROR: Failed to unmark moving unit")
+                    }
+                    Some(pos) => {
+                        teleport_player(pos, &mut gs.ecs);
+                        return RunState::Paused;
+                    }
                 }
-                return RunState::Paused;
             }
             _ => {}
         },

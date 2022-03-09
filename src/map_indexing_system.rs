@@ -3,6 +3,8 @@ use specs::prelude::*;
 
 pub struct MapIndexingSystem {}
 
+/// System for keeping track of what entities are where, currently only used for
+/// checking and updating tiles as being blocked on the map
 impl<'a> System<'a> for MapIndexingSystem {
     type SystemData = (
         WriteExpect<'a, Map>,

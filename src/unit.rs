@@ -7,19 +7,15 @@
 
 use crate::spawner::*;
 use crate::{
-    handle_move_result, teleport_player, xy_idx, FailedMoveReason, Map, Moving, Player,
-    PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
+    teleport_player, xy_idx, Map, Moving, Player, PlayerOrder, Position, RunState, State, Unit,
+    Viewshed, World, handle_move_result, FailedMoveReason
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
 /// Attempts to move a unit, checking if the tile the unit will end up on is blocked or not
-fn try_move_unit(
-    delta_x: i32,
-    delta_y: i32,
-    ecs: &mut World,
-) -> Result<(i32, i32), FailedMoveReason> {
+fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) -> Result<(i32, i32), FailedMoveReason> {
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -27,9 +23,7 @@ fn try_move_unit(
     let map = ecs.fetch::<Map>();
 
     if let Some((_unit, pos, viewshed, _moving)) =
-        (&mut units, &mut positions, &mut viewsheds, &moving_marker)
-            .join()
-            .next()
+        (&mut units, &mut positions, &mut viewsheds, &moving_marker).join().next()
     {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
         if !map.blocked[destination_idx] {
@@ -85,9 +79,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::I => {
                 // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
                 match unmark_moving_unit(&mut gs.ecs) {
-                    None => {
-                        panic!("ERROR: Failed to unmark moving unit")
-                    }
+                    None => { panic!("ERROR: Failed to unmark moving unit") },
                     Some(pos) => {
                         teleport_player(pos, &mut gs.ecs);
                         return RunState::Paused;
@@ -142,18 +134,19 @@ fn build_fort(ecs: &mut World) -> RunState {
         for (player, _entity) in (&players, &entities).join() {
             player_order = Some(player.order);
         }
-
+        /* 
+            COME BACK AND REWRITE THIS SECTION; I THINK IT CAN BE DONE BETTER
+        */
         if let Some(ref owner) = player_order {
             for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
                 if map.claimed_tiles[idx] == *owner {
                     new_fort_pos = Some((pos.x, pos.y));
-                }
-
-                for x in pos.x - 1..=pos.x + 1 {
-                    for y in pos.y - 1..=pos.y + 1 {
-                        let idx = xy_idx(x, y);
-                        map.claimed_tiles[idx] = *owner;
+                    for x in pos.x - 1..=pos.x + 1 {
+                        for y in pos.y - 1..=pos.y + 1 {
+                            let idx = xy_idx(x, y);
+                            map.claimed_tiles[idx] = *owner;
+                        }
                     }
                 }
             }

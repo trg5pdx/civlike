@@ -82,7 +82,7 @@ impl GameState for State {
         match self.runstate {
             RunState::MoveCursor => {
                 self.run_systems();
-                self.runstate = RunState::Paused;
+                self.runstate = player_input(self, ctx);
             }
             RunState::MoveUnit => {
                 self.run_systems();

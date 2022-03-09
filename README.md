@@ -62,7 +62,7 @@ which I eventually just set up an enum to keep track of the number of players, a
 process set up a seperate vector in the map that keeps track of who claims what tile using the same enum.
 
 Thanks to this project, I became more proficient with programming in Rust, I learned the basics of how to build a game, and I learned about building games using Entity Control
-Systems, which has helped me think about how to approach problems in a different way.
+Systems, which has helped me think about how to approach problems in a different way. 
 
 # Credits
 

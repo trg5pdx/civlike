@@ -7,15 +7,12 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::spawner::*;
-use crate::{
-    teleport_player, xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State,
-    World,
-};
+use crate::{xy_idx, Fort, Map, Player, PlayerOrder, Position, RunState, Selected, State, World, teleport_player};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 /// Builds a unit at the current fort is a unit isn't already present
-fn build_unit(ecs: &mut World) -> RunState {
+fn build_unit(ecs: &mut World) {
     let mut player_order: Option<PlayerOrder> = None;
     let mut new_unit_pos: Option<(i32, i32)> = None;
 
@@ -64,8 +61,6 @@ fn build_unit(ecs: &mut World) -> RunState {
             ecs.insert(unit);
         }
     }
-
-    RunState::Paused
 }
 
 /// Used for removing the moving marker from a unit struct so it won't move the next time a unit gets moved
@@ -92,18 +87,27 @@ fn unmark_selected_fort(ecs: &mut World) -> Option<Position> {
 /// Lets the player build a unit or exit back to cursor mode
 pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     match ctx.key {
-        None => return RunState::SelectedFort,
+        None => { },
         Some(key) => match key {
-            VirtualKeyCode::B => return build_unit(&mut gs.ecs),
-            VirtualKeyCode::I => match unmark_selected_fort(&mut gs.ecs) {
-                None => {
-                    panic!("ERROR: Failed to unmark selected fort")
-                }
-                Some(pos) => {
-                    teleport_player(pos, &mut gs.ecs);
-                    return RunState::Paused;
-                }
+            VirtualKeyCode::B => { 
+                build_unit(&mut gs.ecs);
+                match unmark_selected_fort(&mut gs.ecs) {
+                    None => { panic!("ERROR: Failed to unmark selected fort") },
+                    Some(pos) => {
+                        teleport_player(pos, &mut gs.ecs);
+                    }
+                }  
+                return RunState::Paused;
             },
+            VirtualKeyCode::I => { 
+                match unmark_selected_fort(&mut gs.ecs) {
+                    None => { panic!("ERROR: Failed to unmark selected fort") },
+                    Some(pos) => {
+                        teleport_player(pos, &mut gs.ecs);
+                        return RunState::Paused;
+                    }
+                }  
+            }
             _ => {}
         },
     }

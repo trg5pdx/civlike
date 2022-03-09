@@ -10,11 +10,6 @@ use specs::prelude::*;
 
 const SHOW_BOUNDARIES: bool = true;
 
-/*
-    COME BACK AND REWORK THIS FUNCTION; I COPY PASTED MULTIPLE SECTIONS TO GET
-    IT WORKING; SHOULD COME BACK AND MAKE FUNCTIONS FOR THE REPEATED PARTS TO
-    MAKE IT LESS MESSY
-*/
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let player_pos = ecs.fetch::<Point>();
@@ -28,28 +23,13 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let min_y = player_pos.y - center_y;
     let max_y = min_y + y_chars as i32;
 
-    let map_width = map.width - 1;
-    let map_height = map.height - 1;
-
     for (y, ty) in (min_y..max_y).enumerate() {
         for (x, tx) in (min_x..max_x).enumerate() {
-            if tx >= 0 && tx <= map_width && ty >= 0 && ty <= map_height {
+            if tx >= 0 && tx < map.width && ty >= 0 && ty < map.height {
                 let idx = xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = get_tile_glyph(idx, &*map);
-                    match map.claimed_tiles[idx] {
-                        PlayerOrder::NoPlayer => {
-                            ctx.set(x, y, fg, bg, glyph);
-                        }
-                        PlayerOrder::PlayerOne => {
-                            let bg = RGB::named(PINK);
-                            ctx.set(x, y, fg, bg, glyph);
-                        }
-                        PlayerOrder::PlayerTwo => {
-                            let bg = RGB::named(RED);
-                            ctx.set(x, y, fg, bg, glyph);
-                        }
-                    }
+                    ctx.set(x, y, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
                 ctx.set(x, y, RGB::named(GRAY), RGB::named(BLACK), to_cp437(','));
@@ -70,9 +50,9 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
             let entity_screen_y = pos.y - min_y;
 
             if entity_screen_x >= 0
-                && entity_screen_x <= map_width
+                && entity_screen_x < map.width
                 && entity_screen_y >= 0
-                && entity_screen_y <= map_height
+                && entity_screen_y < map.height
             {
                 ctx.set(
                     entity_screen_x,
@@ -92,9 +72,9 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
                 let entity_screen_y = pos.y - min_y;
 
                 if entity_screen_x >= 0
-                    && entity_screen_x <= map_width
+                    && entity_screen_x < map.width
                     && entity_screen_y >= 0
-                    && entity_screen_y <= map_height
+                    && entity_screen_y < map.height
                 {
                     ctx.set(
                         entity_screen_x,
@@ -112,8 +92,14 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
 fn get_tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let glyph;
     let mut fg;
-    let bg = RGB::from_f32(0.0, 0.0, 0.0);
+    let bg;
 
+    match map.claimed_tiles[idx] {
+        PlayerOrder::NoPlayer => { bg = RGB::named(BLACK) },
+        PlayerOrder::PlayerOne => { bg = RGB::named(PINK) },
+        PlayerOrder::PlayerTwo => { bg = RGB::named(RED) },
+    }
+   
     match map.tiles[idx] {
         TileType::Mountain => {
             fg = RGB::named(GREY);

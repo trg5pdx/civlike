@@ -10,6 +10,7 @@ use specs::prelude::*;
 
 pub struct VisibilitySystem {}
 
+/// A system for handling how the units see the tiles around them
 impl<'a> System<'a> for VisibilitySystem {
     type SystemData = (
         WriteExpect<'a, Map>,

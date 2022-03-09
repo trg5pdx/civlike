@@ -23,11 +23,6 @@ fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
             unit_count: 0,
             fort_count: 0,
         })
-        .with(Viewshed {
-            visible_tiles: Vec::new(),
-            range: 0, // Setting cursor range to 0 to allow the cursor to walk through revealed tiles & not reveal new territory
-            dirty: true,
-        })
         .with(Name {
             name: "Player1".to_string(),
         })

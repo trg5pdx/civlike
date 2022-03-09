@@ -31,8 +31,10 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     let position = ecs.read_storage::<Position>();
     let player = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
+    let forts = ecs.read_storage::<Fort>();
     let units = ecs.read_storage::<Unit>();
     let moving = ecs.read_storage::<Moving>();
+    let names = ecs.read_storage::<Name>();
 
     for (_player, cursor_pos) in (&player, &position).join() {
         let mut pos: Option<Position> = None;
@@ -63,7 +65,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
             TileType::Ice => "Ice".to_string(),
         };
 
-        // Need to come back to this, the compiler wanted me ot make the enum snake case but here
+        // Need to come back to this, the compiler wanted me to make the enum snake case but here
         // it wanted it to be camel case, and they complained about not using them
         let claims = match controlled {
             PlayerOrder::NoPlayer => "Unclaimed".to_string(),
@@ -103,6 +105,31 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
                     RGB::named(YELLOW),
                     RGB::named(BLACK),
                     unit_stats,
+                );
+            }
+        }
+        for (fort, fort_pos, fort_name) in (&forts, &position, &names).join() {
+            if (fort_pos.x == cursor_pos.x) && (fort_pos.y == cursor_pos.y) {
+                let fort_info;
+                match fort.owner {
+                    PlayerOrder::NoPlayer => { fort_info = "Not Owned".to_string() },
+                    PlayerOrder::PlayerOne => { fort_info = "Player1's Fort".to_string() },
+                    PlayerOrder::PlayerTwo => { fort_info = "Player2's Fort".to_string() },
+                }
+                ctx.print_color(
+                    start_x + 1,
+                    start_y + 5,
+                    RGB::named(YELLOW),
+                    RGB::named(BLACK),
+                    fort_info,
+                );
+
+                ctx.print_color(
+                    start_x + 1,
+                    start_y + 6,
+                    RGB::named(YELLOW),
+                    RGB::named(BLACK),
+                    format!("Fort name: {}", fort_name.name),
                 );
             }
         }
@@ -249,7 +276,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
 
     for (i, (_fort, name, entity)) in (&forts, &names, &entities)
         .join()
-        .filter(|unit| unit.0.owner == player_enum)
+        .filter(|fort| fort.0.owner == player_enum)
         .enumerate()
     {
         ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('('));

@@ -31,9 +31,9 @@ You can run the game with some flags to change how the game will run. Currently,
 
 To run these flags, run either:
 
-`cargo run -- <FLAG HERE>`
-or
-`./target/debug/civlike <FLAG HERE>`
+`cargo run -- <FLAG HERE>`      
+or       
+`./target/debug/civlike <FLAG HERE>`       
 
 # Key for symbols     
 +: player cursor; lets you move over the tiles and get information about the game world       

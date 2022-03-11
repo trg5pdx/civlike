@@ -28,6 +28,9 @@ mod gamelog;
 pub use gamelog::*;
 
 mod gui;
+pub use gui::fort::*;
+pub use gui::unit::*;
+
 mod heightmap;
 mod spawner;
 
@@ -62,8 +65,8 @@ pub enum FailedMoveReason {
 pub struct State {
     pub ecs: World,
     pub runstate: RunState,
-	pub godmode: bool,
-	pub verbose: bool,
+    pub godmode: bool,
+    pub verbose: bool,
 }
 
 impl State {
@@ -94,7 +97,7 @@ impl GameState for State {
                 self.runstate = unit_input(self, ctx);
             }
             RunState::ShowUnits => {
-                let result = gui::unit_list(self, ctx);
+                let result = unit_list(self, ctx);
                 match result {
                     gui::MenuResult::Cancel => self.runstate = RunState::Paused,
                     gui::MenuResult::Selected => {
@@ -108,7 +111,7 @@ impl GameState for State {
                 self.runstate = fort_input(self, ctx);
             }
             RunState::ShowForts => {
-                let result = gui::fort_list(self, ctx);
+                let result = fort_list(self, ctx);
                 match result {
                     gui::MenuResult::Cancel => self.runstate = RunState::Paused,
                     gui::MenuResult::Selected => {
@@ -124,21 +127,25 @@ impl GameState for State {
     }
 }
 
-pub fn handle_move_result(ecs: &mut World, res: Result<(i32, i32), FailedMoveReason>, verbose: bool) {
+pub fn handle_move_result(
+    ecs: &mut World,
+    res: Result<(i32, i32), FailedMoveReason>,
+    verbose: bool,
+) {
     let mut log = ecs.fetch_mut::<GameLog>();
     match res {
-        Ok((x, y)) => { 
-			if verbose {	
-				log.entries
-					.push(format!("Moved entity to x: {} y: {}", x, y));
-			}
-		}
+        Ok((x, y)) => {
+            if verbose {
+                log.entries
+                    .push(format!("Moved entity to x: {} y: {}", x, y));
+            }
+        }
         Err(e) => match e {
             FailedMoveReason::TileBlocked => log
                 .entries
-                .push(format!("ERROR: Tile entity tried to move on is blocked")),
+                .push("ERROR: Tile entity tried to move on is blocked".to_string()),
             FailedMoveReason::UnableToGrabEntity => {
-                log.entries.push(format!("ERROR: Failed to grab entity"))
+                log.entries.push("ERROR: Failed to grab entity".to_string())
             }
         },
     }
@@ -155,25 +162,28 @@ fn main() -> BError {
     let mut gs = State {
         ecs: World::new(),
         runstate: RunState::MoveCursor,
-		godmode: false,
-		verbose: false,
+        godmode: false,
+        verbose: false,
     };
 
     for arg in env::args().skip(1) {
         cmd_args.push(arg.clone());
     }
 
-	while !cmd_args.is_empty() {
-		let cmd_input = cmd_args.pop();
+    while !cmd_args.is_empty() {
+        let cmd_input = cmd_args.pop();
 
-		if let Some(arg) = cmd_input { 
-			match arg.as_str() {
-				"-godmode" => { range = 400; gs.godmode = true },
-				"-verbose" => { gs.verbose = true },
-				_ => { },
-			}
-		}	
-	}
+        if let Some(arg) = cmd_input {
+            match arg.as_str() {
+                "-godmode" => {
+                    range = 400;
+                    gs.godmode = true
+                }
+                "-verbose" => gs.verbose = true,
+                _ => {}
+            }
+        }
+    }
 
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();

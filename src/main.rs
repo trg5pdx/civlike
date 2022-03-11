@@ -24,6 +24,9 @@ pub use unit::*;
 mod fort;
 pub use fort::*;
 
+mod gamelog;
+pub use gamelog::*;
+
 mod gui;
 mod heightmap;
 mod spawner;
@@ -50,8 +53,8 @@ pub enum RunState {
 
 /// Used for returning why a move failed to happen
 pub enum FailedMoveReason {
-	TileBlocked,
-	UnableToGrabEntity,	
+    TileBlocked,
+    UnableToGrabEntity,
 }
 
 /// Contains the game world and all of it's entities within it, and an enum for denoting
@@ -59,6 +62,8 @@ pub enum FailedMoveReason {
 pub struct State {
     pub ecs: World,
     pub runstate: RunState,
+	pub godmode: bool,
+	pub verbose: bool,
 }
 
 impl State {
@@ -119,35 +124,57 @@ impl GameState for State {
     }
 }
 
-pub fn handle_move_result(res: Result<(i32, i32), FailedMoveReason>) {
+pub fn handle_move_result(ecs: &mut World, res: Result<(i32, i32), FailedMoveReason>, verbose: bool) {
+    let mut log = ecs.fetch_mut::<GameLog>();
     match res {
-        Ok((x, y)) => {
-            println!("Moved entity to x: {} y: {}", x, y);
-        }
-        Err(e) => {
-            match e {
-                FailedMoveReason::TileBlocked => eprintln!("ERROR: Tile entity tried to move on is blocked"),
-                FailedMoveReason::UnableToGrabEntity => eprintln!("ERROR: Failed to grab entity"),
+        Ok((x, y)) => { 
+			if verbose {	
+				log.entries
+					.push(format!("Moved entity to x: {} y: {}", x, y));
+			}
+		}
+        Err(e) => match e {
+            FailedMoveReason::TileBlocked => log
+                .entries
+                .push(format!("ERROR: Tile entity tried to move on is blocked")),
+            FailedMoveReason::UnableToGrabEntity => {
+                log.entries.push(format!("ERROR: Failed to grab entity"))
             }
-        }
+        },
     }
 }
 
 use std::env;
 
 fn main() -> BError {
+    let mut range = 8;
     let mut cmd_args = Vec::new();
-
-    for arg in env::args().skip(1) {
-        cmd_args.push(arg.clone());
-    }
 
     let context = BTermBuilder::simple80x50().with_title("Civlike").build()?;
 
     let mut gs = State {
         ecs: World::new(),
         runstate: RunState::MoveCursor,
+		godmode: false,
+		verbose: false,
     };
+
+    for arg in env::args().skip(1) {
+        cmd_args.push(arg.clone());
+    }
+
+	while !cmd_args.is_empty() {
+		let cmd_input = cmd_args.pop();
+
+		if let Some(arg) = cmd_input { 
+			match arg.as_str() {
+				"-godmode" => { range = 400; gs.godmode = true },
+				"-verbose" => { gs.verbose = true },
+				_ => { },
+			}
+		}	
+	}
+
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Viewshed>();
@@ -158,23 +185,20 @@ fn main() -> BError {
     gs.ecs.register::<BlocksTile>();
     gs.ecs.register::<Moving>();
     gs.ecs.register::<Selected>();
+    gs.ecs.register::<GameLog>();
 
     let map = Map::new_map();
 
     gs.ecs.insert(map);
-
-    let mut range = 8;
-
-    // Added this to let me play with world generation later and not deal with being unable to see the whole map
-    if !cmd_args.is_empty() && cmd_args.remove(0).as_str() == "-godmode" {
-        range = 300;
-    }
 
     let x_range: (i32, i32) = (0, (MAPWIDTH - 1) as i32);
     let y_range: (i32, i32) = (0, (MAPHEIGHT - 1) as i32);
 
     let position: (i32, i32) = spawner::generate_coordinates(&gs.ecs, x_range, y_range);
     spawner::spawn_player_entities(&mut gs.ecs, position, range, PlayerOrder::PlayerOne);
+    gs.ecs.insert(gamelog::GameLog {
+        entries: vec!["Welcome to Civlike!".to_string()],
+    });
 
     main_loop(context, gs)
 }

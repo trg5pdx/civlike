@@ -23,6 +23,18 @@ Afterwards, you can run the command below to build the game and run it
 The game should launch once it's done compiling and you should see the map, the player cursor, and a few of your units. If you wish to run the game again later, 
 you can run the executable in target/debug/ called civlike instead of building again.
 
+# Flags
+You can run the game with some flags to change how the game will run. Currently, the only two flags that exist are: 
+
+`-verbose` lets you see all messages in the message log (Warning, will print out a lot of messages)      
+`-godmode` for now, the only thing it does is extend the view range of your units to be very far, so you can get a good look at how the world generates.       
+
+To run these flags, run either:
+
+`cargo run -- <FLAG HERE>`
+or
+`./target/debug/civlike <FLAG HERE>`
+
 # Key for symbols     
 +: player cursor; lets you move over the tiles and get information about the game world       
 i: units       

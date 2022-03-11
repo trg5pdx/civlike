@@ -6,13 +6,20 @@
 //!
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
-use crate::{xy_idx, Map, Player, Position, RunState, FailedMoveReason, State, TileType, World, handle_move_result};
+use crate::{
+    handle_move_result, xy_idx, FailedMoveReason, Map, Player, Position, RunState, State, TileType,
+    World,
+};
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
 /// Attempts to move the cursor in the world, checks if the place the cursor will be at is the border or not
-fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> Result<(i32, i32), FailedMoveReason>{
+fn try_move_player(
+    delta_x: i32,
+    delta_y: i32,
+    ecs: &mut World,
+) -> Result<(i32, i32), FailedMoveReason> {
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let map = ecs.fetch::<Map>();
@@ -54,10 +61,22 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     match ctx.key {
         None => return RunState::Paused,
         Some(key) => match key {
-            VirtualKeyCode::A => handle_move_result(try_move_player(-1, 0, &mut gs.ecs)),
-            VirtualKeyCode::D => handle_move_result(try_move_player(1, 0, &mut gs.ecs)),
-            VirtualKeyCode::W => handle_move_result(try_move_player(0, -1, &mut gs.ecs)),
-            VirtualKeyCode::S => handle_move_result(try_move_player(0, 1, &mut gs.ecs)),
+            VirtualKeyCode::A => {
+                let res = try_move_player(-1, 0, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::D => {
+                let res = try_move_player(1, 0, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::W => {
+                let res = try_move_player(0, -1, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::S => {
+                let res = try_move_player(0, 1, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
             VirtualKeyCode::I => return RunState::ShowUnits,
             VirtualKeyCode::F => return RunState::ShowForts,
             VirtualKeyCode::Escape => std::process::exit(0),

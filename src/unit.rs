@@ -7,15 +7,19 @@
 
 use crate::spawner::*;
 use crate::{
-    teleport_player, xy_idx, Map, Moving, Player, PlayerOrder, Position, RunState, State, Unit,
-    Viewshed, World, handle_move_result, FailedMoveReason
+    handle_move_result, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, Moving, Player,
+    PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 use std::cmp::{max, min};
 
 /// Attempts to move a unit, checking if the tile the unit will end up on is blocked or not
-fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) -> Result<(i32, i32), FailedMoveReason> {
+fn try_move_unit(
+    delta_x: i32,
+    delta_y: i32,
+    ecs: &mut World,
+) -> Result<(i32, i32), FailedMoveReason> {
     let mut positions = ecs.write_storage::<Position>();
     let mut units = ecs.write_storage::<Unit>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -23,7 +27,9 @@ fn try_move_unit(delta_x: i32, delta_y: i32, ecs: &mut World) -> Result<(i32, i3
     let map = ecs.fetch::<Map>();
 
     if let Some((_unit, pos, viewshed, _moving)) =
-        (&mut units, &mut positions, &mut viewsheds, &moving_marker).join().next()
+        (&mut units, &mut positions, &mut viewsheds, &moving_marker)
+            .join()
+            .next()
     {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
         if !map.blocked[destination_idx] {
@@ -65,21 +71,76 @@ fn unmark_moving_unit(ecs: &mut World) -> Option<Position> {
 
 /// Lets the player move a unit around, claim a tile, build a fort, or exit back to cursor mode
 pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
+    let mut order = String::new();
+    {
+        let entities = gs.ecs.entities();
+        let players = gs.ecs.read_storage::<Player>();
+
+        for (player, _entity) in (&players, &entities).join() {
+            match player.order {
+                PlayerOrder::NoPlayer => order = "No Player".to_string(),
+                PlayerOrder::PlayerOne => order = "Player1".to_string(),
+                PlayerOrder::PlayerTwo => order = "Player2".to_string(),
+            }
+        }
+    }
+
     match ctx.key {
         None => return RunState::MoveUnit,
         Some(key) => match key {
-            VirtualKeyCode::A => handle_move_result(try_move_unit(-1, 0, &mut gs.ecs)),
-            VirtualKeyCode::D => handle_move_result(try_move_unit(1, 0, &mut gs.ecs)),
-            VirtualKeyCode::W => handle_move_result(try_move_unit(0, -1, &mut gs.ecs)),
-            VirtualKeyCode::S => handle_move_result(try_move_unit(0, 1, &mut gs.ecs)),
-            VirtualKeyCode::G => claim_tile(&mut gs.ecs),
+            VirtualKeyCode::A => {
+                let res = try_move_unit(-1, 0, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::D => {
+                let res = try_move_unit(1, 0, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::W => {
+                let res = try_move_unit(0, -1, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::S => {
+                let res = try_move_unit(0, 1, &mut gs.ecs);
+                handle_move_result(&mut gs.ecs, res, gs.verbose);
+            }
+            VirtualKeyCode::G => {
+                let claimed = claim_tile(&mut gs.ecs);
+                {
+                    let mut log = gs.ecs.fetch_mut::<GameLog>();
+
+                    match claimed {
+                        Some((x, y)) => {
+                            log.entries
+                                .push(format!("{} has claimed a tile at ({}, {})", order, x, y));
+                        }
+                        None => {
+                            log.entries.push("Unable to claim tile".to_string());
+                        }
+                    }
+                }
+            }
             VirtualKeyCode::B => {
-                return build_fort(&mut gs.ecs);
+                let new_fort_location = build_fort(&mut gs.ecs);
+                {
+                    let mut log = gs.ecs.fetch_mut::<GameLog>();
+
+                    match new_fort_location {
+                        Some((x, y)) => {
+                            log.entries
+                                .push(format!("{} has built a fort at ({}, {})", order, x, y));
+                        }
+                        None => {
+                            log.entries.push("Unable to build fort".to_string());
+                        }
+                    }
+                }
             }
             VirtualKeyCode::I => {
-                // Maybe come back to this; I don't think it could be done but probably better to err on the side of caution
                 match unmark_moving_unit(&mut gs.ecs) {
-                    None => { panic!("ERROR: Failed to unmark moving unit") },
+                    None => {
+                        panic!("ERROR: Failed to unmark moving unit")
+                    }
                     Some(pos) => {
                         teleport_player(pos, &mut gs.ecs);
                         return RunState::Paused;
@@ -93,36 +154,40 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
 }
 
 /// Grabs the currently moving unit and claims the tile it's currently on if it isn't claimed already
-fn claim_tile(ecs: &mut World) {
+fn claim_tile(ecs: &mut World) -> Option<(i32, i32)> {
     let units = ecs.read_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
     let moving = ecs.read_storage::<Moving>();
     let players = ecs.read_storage::<Player>();
     let entities = ecs.entities();
     let mut map = ecs.fetch_mut::<Map>();
+    let mut claim_pos: Option<(i32, i32)> = None;
 
     for (_unit, pos, _move) in (&units, &positions, &moving).join() {
         for (_player_entity, player) in (&entities, &players).join() {
             let idx = xy_idx(pos.x, pos.y);
             if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
                 map.claimed_tiles[idx] = player.order;
+                claim_pos = Some((pos.x, pos.y));
             }
         }
     }
+    claim_pos
 }
 
+/*
+    Using scoping in this function to prevent errors from the borrow checker since I'm moving
+    ecs into unit, and inserting the unit into the world. Got the idea from the rust
+    roguelike tutorial.
+
+    Section: User Interface; Notifying of Deaths
+    Link: https://bfnightly.bracketproductions.com/rustbook/chapter_8.html
+*/
 /// Gets the curret location of a unit and if it's claimed by the current player, builds a fort there
-fn build_fort(ecs: &mut World) -> RunState {
+fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
     let mut player_order: Option<PlayerOrder> = None;
     let mut new_fort_pos: Option<(i32, i32)> = None;
 
-    /*
-        Scoping this to prevent errors from the borrow checker since I'm moving ecs into unit,
-        and inserting the unit into the world. Got the idea from the rust roguelike tutorial
-
-        Section: User Interface; Notifying of Deaths
-        Link: https://bfnightly.bracketproductions.com/rustbook/chapter_8.html
-    */
     {
         let players = ecs.read_storage::<Player>();
         let entities = ecs.entities();
@@ -134,14 +199,14 @@ fn build_fort(ecs: &mut World) -> RunState {
         for (player, _entity) in (&players, &entities).join() {
             player_order = Some(player.order);
         }
-        /* 
-            COME BACK AND REWRITE THIS SECTION; I THINK IT CAN BE DONE BETTER
-        */
+
         if let Some(ref owner) = player_order {
             for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
                 if map.claimed_tiles[idx] == *owner {
                     new_fort_pos = Some((pos.x, pos.y));
+
+                    // Claiming the tiles surrounding this tile if a fort can be built here
                     for x in pos.x - 1..=pos.x + 1 {
                         for y in pos.y - 1..=pos.y + 1 {
                             let idx = xy_idx(x, y);
@@ -170,5 +235,6 @@ fn build_fort(ecs: &mut World) -> RunState {
             ecs.insert(fort);
         }
     }
-    RunState::MoveUnit
+
+    new_fort_pos
 }

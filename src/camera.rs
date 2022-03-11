@@ -13,6 +13,8 @@ const SHOW_BOUNDARIES: bool = true;
 pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let player_pos = ecs.fetch::<Point>();
+    let positions = ecs.read_storage::<Position>();
+    let renderables = ecs.read_storage::<Renderable>();
     let (x_chars, y_chars) = ctx.get_char_size();
 
     let center_x = (x_chars / 2) as i32;
@@ -36,10 +38,6 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
             }
         }
     }
-
-    let positions = ecs.read_storage::<Position>();
-    let renderables = ecs.read_storage::<Renderable>();
-    let map = ecs.fetch::<Map>();
 
     let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
@@ -95,11 +93,11 @@ fn get_tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let bg;
 
     match map.claimed_tiles[idx] {
-        PlayerOrder::NoPlayer => { bg = RGB::named(BLACK) },
-        PlayerOrder::PlayerOne => { bg = RGB::named(PINK) },
-        PlayerOrder::PlayerTwo => { bg = RGB::named(RED) },
+        PlayerOrder::NoPlayer => bg = RGB::named(BLACK),
+        PlayerOrder::PlayerOne => bg = RGB::named(PINK),
+        PlayerOrder::PlayerTwo => bg = RGB::named(RED),
     }
-   
+
     match map.tiles[idx] {
         TileType::Mountain => {
             fg = RGB::named(GREY);

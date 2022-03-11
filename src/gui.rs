@@ -6,27 +6,25 @@
 
 use crate::PlayerOrder;
 use crate::{
-    xy_idx, Fort, Map, Moving, Name, Player, Position, Selected, State, TileType, Unit,
+    xy_idx, Fort, GameLog, Map, Moving, Name, Player, Position, Selected, State, TileType, Unit,
     VIEW_HEIGHT, VIEW_WIDTH,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
+/*
+The draw_ui function was provided by the rust roguelike tutorial, with it being tweaked for my usage.
+Link to the tutorial at the top of this file and in the README
+*/
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
-    let start_x = VIEW_WIDTH;
-    let start_y = 0;
+    let x = VIEW_WIDTH;
+    let y = 0;
     let width = 19;
-    let height = VIEW_HEIGHT - 1;
+    let height = VIEW_HEIGHT + 9;
+    let bg = RGB::named(BLACK);
 
     // Draws the side box
-    ctx.draw_box(
-        start_x,
-        start_y,
-        width,
-        height,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-    );
+    ctx.draw_box(x, y, width, height, RGB::named(WHITE), bg);
 
     let position = ecs.read_storage::<Position>();
     let player = ecs.read_storage::<Player>();
@@ -74,64 +72,42 @@ pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
         };
 
         // Write out the tile type and the current position to the gui box
-        ctx.print_color(
-            start_x + 1,
-            start_y + 1,
-            RGB::named(YELLOW),
-            RGB::named(BLACK),
-            &location,
-        );
-        ctx.print_color(
-            start_x + 1,
-            start_y + 2,
-            RGB::named(YELLOW),
-            RGB::named(BLACK),
-            &tile_str.to_string(),
-        );
-        ctx.print_color(
-            start_x + 1,
-            start_y + 3,
-            RGB::named(YELLOW),
-            RGB::named(BLACK),
-            &claims,
-        );
+        ctx.print_color(x + 1, y + 1, RGB::named(YELLOW), bg, &location);
+        ctx.print_color(x + 1, y + 2, RGB::named(YELLOW), bg, &tile_str.to_string());
+        ctx.print_color(x + 1, y + 3, RGB::named(YELLOW), bg, &claims);
 
         for (unit, unit_pos) in (&units, &position).join() {
             if (unit_pos.x == cursor_pos.x) && (unit_pos.y == cursor_pos.y) {
                 let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
-                ctx.print_color(
-                    start_x + 1,
-                    start_y + 4,
-                    RGB::named(YELLOW),
-                    RGB::named(BLACK),
-                    unit_stats,
-                );
+                ctx.print_color(x + 1, y + 4, RGB::named(YELLOW), bg, unit_stats);
             }
         }
         for (fort, fort_pos, fort_name) in (&forts, &position, &names).join() {
             if (fort_pos.x == cursor_pos.x) && (fort_pos.y == cursor_pos.y) {
                 let fort_info;
                 match fort.owner {
-                    PlayerOrder::NoPlayer => { fort_info = "Not Owned".to_string() },
-                    PlayerOrder::PlayerOne => { fort_info = "Player1's Fort".to_string() },
-                    PlayerOrder::PlayerTwo => { fort_info = "Player2's Fort".to_string() },
+                    PlayerOrder::NoPlayer => fort_info = "Not Owned".to_string(),
+                    PlayerOrder::PlayerOne => fort_info = "Player1's Fort".to_string(),
+                    PlayerOrder::PlayerTwo => fort_info = "Player2's Fort".to_string(),
                 }
-                ctx.print_color(
-                    start_x + 1,
-                    start_y + 5,
-                    RGB::named(YELLOW),
-                    RGB::named(BLACK),
-                    fort_info,
-                );
+                ctx.print_color(x + 1, y + 5, RGB::named(YELLOW), bg, fort_info);
 
-                ctx.print_color(
-                    start_x + 1,
-                    start_y + 6,
-                    RGB::named(YELLOW),
-                    RGB::named(BLACK),
-                    format!("Fort name: {}", fort_name.name),
-                );
+                let fort_option_name = format!("Fort name: {}", fort_name.name);
+                ctx.print_color(x + 1, y + 6, RGB::named(YELLOW), bg, fort_option_name);
             }
+        }
+    }
+
+    {
+        ctx.draw_box(0, VIEW_HEIGHT, VIEW_WIDTH - 1, 9, RGB::named(WHITE), bg);
+
+        let log = ecs.fetch::<GameLog>();
+        let mut y = VIEW_HEIGHT + 1;
+        for s in log.entries.iter().rev() {
+            if y < 49 {
+                ctx.print(2, y, s)
+            }
+            y += 1;
         }
     }
 }
@@ -143,12 +119,23 @@ pub enum MenuResult {
     Selected,
 }
 
+/*
+    The unit_list and fort_list functions were built with help from the rust roguelike tutorial,
+    with them being modified versions of the inventory menu provided by the tutorial here:
+    https://bfnightly.bracketproductions.com/rustbook/chapter_9.html
+
+    The tutorial has it's own system it uses for the inventory, but in my case I instead rely on
+    enums in the units/forts to denote ownership and use marker traits to tell other functions
+    which forts/units are currently selected by the player
+*/
+
 /// Used for printing out a list of the units a player currently has and is able to move
 pub fn unit_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let players = gs.ecs.read_storage::<Player>();
     let units = gs.ecs.read_storage::<Unit>();
     let names = gs.ecs.read_storage::<Name>();
     let entities = gs.ecs.entities();
+    let bg = RGB::named(BLACK);
 
     let mut player_enum: Option<PlayerOrder> = None;
 
@@ -166,43 +153,18 @@ pub fn unit_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let mut owned_units: Vec<Entity> = Vec::new();
     let mut y = (25 - (count / 2)) as i32;
 
-    ctx.draw_box(
-        15,
-        y - 2,
-        31,
-        (count + 3) as i32,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-    );
-    ctx.print_color(
-        18,
-        y - 2,
-        RGB::named(YELLOW),
-        RGB::named(BLACK),
-        "Unit List",
-    );
-    ctx.print_color(
-        18,
-        y + count as i32 + 1,
-        RGB::named(YELLOW),
-        RGB::named(BLACK),
-        "ESCAPE to cancel",
-    );
+    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), bg);
+    ctx.print_color(18, y - 2, RGB::named(YELLOW), bg, "Unit List");
+    ctx.print_color(18, y + count as i32 + 1, RGB::named(YELLOW), bg, "ESCAPE to cancel");
 
     for (i, (_unit, name, entity)) in (&units, &names, &entities)
         .join()
         .filter(|unit| unit.0.owner == player_enum)
         .enumerate()
     {
-        ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('('));
-        ctx.set(
-            18,
-            y,
-            RGB::named(YELLOW),
-            RGB::named(BLACK),
-            97 + i as FontCharType,
-        );
-        ctx.set(19, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437(')'));
+        ctx.set(17, y, RGB::named(WHITE), bg, to_cp437('('));
+        ctx.set(18, y, RGB::named(YELLOW), bg, 97 + i as FontCharType);
+        ctx.set(19, y, RGB::named(WHITE), bg, to_cp437(')'));
 
         ctx.print(21, y, &name.name.to_string());
         owned_units.push(entity);
@@ -234,6 +196,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let forts = gs.ecs.read_storage::<Fort>();
     let names = gs.ecs.read_storage::<Name>();
     let entities = gs.ecs.entities();
+    let bg = RGB::named(BLACK);
 
     let mut player_enum: Option<PlayerOrder> = None;
 
@@ -251,35 +214,16 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let mut player_forts: Vec<Entity> = Vec::new();
     let mut y = (25 - (count / 2)) as i32;
 
-    ctx.draw_box(
-        15,
-        y - 2,
-        31,
-        (count + 3) as i32,
-        RGB::named(WHITE),
-        RGB::named(BLACK),
-    );
-    ctx.print_color(
-        18,
-        y - 2,
-        RGB::named(YELLOW),
-        RGB::named(BLACK),
-        "Fort List",
-    );
-    ctx.print_color(
-        18,
-        y + count as i32 + 1,
-        RGB::named(YELLOW),
-        RGB::named(BLACK),
-        "ESCAPE to cancel",
-    );
+    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), bg);
+    ctx.print_color(18, y - 2, RGB::named(YELLOW), bg, "Fort List");
+    ctx.print_color(18,y + count as i32 + 1,RGB::named(YELLOW), bg, "ESCAPE to cancel");
 
     for (i, (_fort, name, entity)) in (&forts, &names, &entities)
         .join()
         .filter(|fort| fort.0.owner == player_enum)
         .enumerate()
     {
-        ctx.set(17, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437('('));
+        ctx.set(17, y, RGB::named(WHITE), bg, to_cp437('('));
         ctx.set(
             18,
             y,
@@ -287,7 +231,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
             RGB::named(BLACK),
             97 + i as FontCharType,
         );
-        ctx.set(19, y, RGB::named(WHITE), RGB::named(BLACK), to_cp437(')'));
+        ctx.set(19, y, RGB::named(WHITE), bg, to_cp437(')'));
 
         ctx.print(21, y, &name.name.to_string());
         player_forts.push(entity);

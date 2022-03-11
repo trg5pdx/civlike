@@ -1,7 +1,20 @@
+//! Made by: Thomas Gardner, 2022
+//!
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project, will cite the tutorial for code that directly came from it
+//! to properly give credit
+//!
+//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
+
 use crate::{xy_idx, BlocksTile, Map, Position};
 use specs::prelude::*;
 
 pub struct MapIndexingSystem {}
+
+/*
+    Map indexing system and blocking came from this part of the rust tutorial:
+    https://bfnightly.bracketproductions.com/rustbook/chapter_7.html?highlight=MapIndexingSystem#blocking-access
+*/
 
 /// System for keeping track of what entities are where, currently only used for
 /// checking and updating tiles as being blocked on the map

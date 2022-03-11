@@ -15,7 +15,7 @@ pub const MAPHEIGHT: usize = 300;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
 pub const VIEW_WIDTH: usize = 60;
-pub const VIEW_HEIGHT: usize = 50;
+pub const VIEW_HEIGHT: usize = 40;
 pub const VIEW_COUNT: usize = VIEW_WIDTH * VIEW_HEIGHT;
 
 #[derive(PartialEq, Copy, Clone, Debug)]

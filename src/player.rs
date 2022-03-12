@@ -7,7 +7,7 @@
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::{
-    handle_move_result, xy_idx, FailedMoveReason, Map, Player, Position, RunState, State, TileType,
+    error_handling, xy_idx, FailedMoveReason, Map, Player, Position, RunState, State, TileType,
     World,
 };
 use bracket_lib::prelude::*;
@@ -63,19 +63,19 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
         Some(key) => match key {
             VirtualKeyCode::A => {
                 let res = try_move_player(-1, 0, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::D => {
                 let res = try_move_player(1, 0, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::W => {
                 let res = try_move_player(0, -1, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::S => {
                 let res = try_move_player(0, 1, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::I => return RunState::ShowUnits,
             VirtualKeyCode::F => return RunState::ShowForts,

@@ -31,6 +31,7 @@ mod gui;
 pub use gui::fort::*;
 pub use gui::unit::*;
 
+mod error_handling;
 mod heightmap;
 mod spawner;
 
@@ -67,6 +68,7 @@ pub struct State {
     pub runstate: RunState,
     pub godmode: bool,
     pub verbose: bool,
+	pub fuzz_test: bool,
 }
 
 impl State {
@@ -86,6 +88,10 @@ impl GameState for State {
         ctx.cls();
         camera::render_camera(&self.ecs, ctx);
         gui::draw_ui(&self.ecs, ctx);
+
+		if self.fuzz_test {
+			ctx.key = Some(VirtualKeyCode::A);
+		}
 
         match self.runstate {
             RunState::MoveCursor => {
@@ -127,30 +133,6 @@ impl GameState for State {
     }
 }
 
-pub fn handle_move_result(
-    ecs: &mut World,
-    res: Result<(i32, i32), FailedMoveReason>,
-    verbose: bool,
-) {
-    let mut log = ecs.fetch_mut::<GameLog>();
-    match res {
-        Ok((x, y)) => {
-            if verbose {
-                log.entries
-                    .push(format!("Moved entity to x: {} y: {}", x, y));
-            }
-        }
-        Err(e) => match e {
-            FailedMoveReason::TileBlocked => log
-                .entries
-                .push("ERROR: Tile entity tried to move on is blocked".to_string()),
-            FailedMoveReason::UnableToGrabEntity => {
-                log.entries.push("ERROR: Failed to grab entity".to_string())
-            }
-        },
-    }
-}
-
 use std::env;
 
 fn main() -> BError {
@@ -164,6 +146,7 @@ fn main() -> BError {
         runstate: RunState::MoveCursor,
         godmode: false,
         verbose: false,
+		fuzz_test: false,
     };
 
     for arg in env::args().skip(1) {
@@ -180,6 +163,7 @@ fn main() -> BError {
                     gs.godmode = true
                 }
                 "-verbose" => gs.verbose = true,
+				"-fuzz_test" => gs.fuzz_test = true,
                 _ => {}
             }
         }

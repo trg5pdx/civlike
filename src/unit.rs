@@ -7,7 +7,7 @@
 
 use crate::spawner::*;
 use crate::{
-    handle_move_result, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, Moving, Player,
+    error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, Moving, Player,
     PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
@@ -90,19 +90,19 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
         Some(key) => match key {
             VirtualKeyCode::A => {
                 let res = try_move_unit(-1, 0, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::D => {
                 let res = try_move_unit(1, 0, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::W => {
                 let res = try_move_unit(0, -1, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::S => {
                 let res = try_move_unit(0, 1, &mut gs.ecs);
-                handle_move_result(&mut gs.ecs, res, gs.verbose);
+                error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
             VirtualKeyCode::G => {
                 let claimed = claim_tile(&mut gs.ecs);

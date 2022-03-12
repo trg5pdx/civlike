@@ -3,7 +3,7 @@ use rand::{thread_rng, Rng};
 use specs::prelude::*;
 
 use crate::{
-    xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed,
+    xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed, TileType
 };
 
 fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
@@ -79,6 +79,7 @@ pub fn fort(ecs: &mut World, position: (i32, i32), name: String, owner: PlayerOr
         .build()
 }
 
+/// Sets up a player and spawns a fort and units at the given location
 pub fn spawn_player_entities(
     ecs: &mut World,
     spawn_point: (i32, i32),
@@ -114,8 +115,8 @@ pub fn spawn_player_entities(
 
     for _ in 0..3 {
         unit_counter += 1;
-        let x_range = (spawn_point.0 - 2, spawn_point.0 + 2);
-        let y_range = (spawn_point.1 - 2, spawn_point.1 + 2);
+        let x_range = (spawn_point.0 - 3, spawn_point.0 + 3);
+        let y_range = (spawn_point.1 - 3, spawn_point.1 + 3);
         let pos = generate_coordinates(ecs, x_range, y_range);
         let unit_entity = unit(ecs, pos, format!("Unit{}", unit_counter), range, player_num);
         ecs.insert(unit_entity);
@@ -135,6 +136,7 @@ pub fn spawn_player_entities(
     }
 }
 
+/// Takes in a range of values and generates coordinates that aren't blocked
 pub fn generate_coordinates(ecs: &World, x_range: (i32, i32), y_range: (i32, i32)) -> (i32, i32) {
     let map = ecs.fetch::<Map>();
     let mut position: Option<(i32, i32)> = None;
@@ -145,8 +147,12 @@ pub fn generate_coordinates(ecs: &World, x_range: (i32, i32), y_range: (i32, i32
         let y: i32 = rng.gen_range(y_range.0..y_range.1);
 
         let idx = xy_idx(x, y);
-
-        if !map.blocked[idx] {
+        
+        // Checking specific tile type since the functions for populating the blocked
+        // map haven't been ran yet as this occurs before the main game loop runs
+        if (map.tiles[idx] != TileType::Ice) &&
+           (map.tiles[idx] != TileType::Mountain) &&
+           (map.tiles[idx] != TileType::Water) {
             position = Some((x, y));
             break;
         }

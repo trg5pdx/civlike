@@ -8,7 +8,7 @@
 use crate::spawner::*;
 use crate::{
     error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, Moving, Player,
-    PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
+    PlayerOrder, Position, RunState, State, Unit, Viewshed, World, MessageType
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -113,9 +113,11 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                         Some((x, y)) => {
                             log.entries
                                 .push(format!("{} has claimed a tile at ({}, {})", order, x, y));
+                            log.message_type.push(MessageType::Claim);
                         }
                         None => {
                             log.entries.push("Unable to claim tile".to_string());
+                            log.message_type.push(MessageType::Error);
                         }
                     }
                 }
@@ -129,9 +131,11 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                         Some((x, y)) => {
                             log.entries
                                 .push(format!("{} has built a fort at ({}, {})", order, x, y));
+                            log.message_type.push(MessageType::Build);
                         }
                         None => {
                             log.entries.push("Unable to build fort".to_string());
+                            log.message_type.push(MessageType::Error);
                         }
                     }
                 }

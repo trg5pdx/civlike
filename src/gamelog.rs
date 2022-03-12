@@ -9,7 +9,16 @@
 use specs::prelude::*;
 use specs_derive::*;
 
+pub enum MessageType {
+    Build,
+    Claim,
+    Move,
+    Error,
+    Other,
+}
+
 #[derive(Component)]
 pub struct GameLog {
     pub entries: Vec<String>,
+    pub message_type: Vec<MessageType>,
 }

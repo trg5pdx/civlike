@@ -67,7 +67,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
         player_forts.push(entity);
         y += 1;
     }
-
+    
     match ctx.key {
         None => MenuResult::NoResponse,
         Some(key) => match key {

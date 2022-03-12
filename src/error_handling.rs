@@ -1,7 +1,7 @@
 use specs::prelude::*;
-use bracket_lib::prelude::*;
-use rand::{thread_rng, Rng};
-use crate::{GameLog, FailedMoveReason, RunState};
+/* use bracket_lib::prelude::*;
+use rand::{thread_rng, Rng}; */
+use crate::{GameLog, FailedMoveReason, MessageType};
 
 pub fn handle_move_result(
     ecs: &mut World,
@@ -14,20 +14,25 @@ pub fn handle_move_result(
             if verbose {
                 log.entries
                     .push(format!("Moved entity to x: {} y: {}", x, y));
+                log.message_type.push(MessageType::Move);
             }
         }
         Err(e) => match e {
-            FailedMoveReason::TileBlocked => log
-                .entries
-                .push("ERROR: Tile entity tried to move on is blocked".to_string()),
+            FailedMoveReason::TileBlocked => {
+                log
+                    .entries
+                    .push("ERROR: Tile entity tried to move on is blocked".to_string());
+                log.message_type.push(MessageType::Error);
+            },
             FailedMoveReason::UnableToGrabEntity => {
-                log.entries.push("ERROR: Failed to grab entity".to_string())
+                log.entries.push("ERROR: Failed to grab entity".to_string());
+                log.message_type.push(MessageType::Error);
             }
         },
     }
 }
 
-/* 
+/*
 /// Generate a key for a test, returns back the expected state after the command is run
 pub fn generate_key(initial_state: &RunState, ctx: &mut BTerm) -> RunState  {
     let mut rng = thread_rng();
@@ -36,5 +41,4 @@ pub fn generate_key(initial_state: &RunState, ctx: &mut BTerm) -> RunState  {
     println!("key: {}", key);
     
     *initial_state
-}
-*/
+} */

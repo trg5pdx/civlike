@@ -192,6 +192,7 @@ fn main() -> BError {
     spawner::spawn_player_entities(&mut gs.ecs, position, range, PlayerOrder::PlayerOne);
     gs.ecs.insert(gamelog::GameLog {
         entries: vec!["Welcome to Civlike!".to_string()],
+		message_type: vec![MessageType::Other],		
     });
 
     main_loop(context, gs)

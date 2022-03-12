@@ -9,7 +9,7 @@
 use crate::spawner::*;
 use crate::{
     teleport_player, xy_idx, Fort, GameLog, Map, Player, PlayerOrder, Position, RunState, Selected,
-    State, World,
+    State, World, MessageType
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -118,9 +118,11 @@ pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                         Some((x, y)) => {
                             log.entries
                                 .push(format!("{} has built a unit at ({}, {})", order, x, y));
+                            log.message_type.push(MessageType::Build);
                         }
                         None => {
                             log.entries.push("Unable to build a unit".to_string());
+                            log.message_type.push(MessageType::Error);
                         }
                     }
                 }

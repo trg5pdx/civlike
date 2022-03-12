@@ -10,7 +10,7 @@
 use crate::PlayerOrder;
 use crate::{
     xy_idx, Fort, GameLog, Map, Moving, Name, Player, Position, TileType, Unit, VIEW_HEIGHT,
-    VIEW_WIDTH,
+    VIEW_WIDTH, MessageType
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -137,12 +137,21 @@ fn display_fort_info(ecs: &World, ctx: &mut BTerm, x: usize, y: usize, cursor_po
 
 fn draw_message_box(ecs: &World, ctx: &mut BTerm) {
     ctx.draw_box(0, VIEW_HEIGHT, VIEW_WIDTH - 1, 9, RGB::named(WHITE), RGB::named(BLACK));
+    
+    ctx.print_color(2, VIEW_HEIGHT, RGB::named(WHITE), RGB::named(BLACK), "[Message Log]".to_string());
 
     let log = ecs.fetch::<GameLog>();
     let mut y = VIEW_HEIGHT + 1;
-    for s in log.entries.iter().rev() {
+    for (message, message_type) in log.entries.iter().rev().zip(log.message_type.iter().rev()) {
         if y < 49 {
-            ctx.print(2, y, s)
+            let fg = match message_type {
+                MessageType::Build => RGB::named(YELLOW), 
+                MessageType::Claim => RGB::named(SEAGREEN), 
+                MessageType::Move => RGB::named(LIGHTBLUE), 
+                MessageType::Error => RGB::named(SALMON),
+                MessageType::Other => RGB::named(WHITE),
+            };
+            ctx.print_color(2, y, fg, RGB::named(BLACK), message);
         }
         y += 1;
     }

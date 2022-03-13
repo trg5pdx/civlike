@@ -47,7 +47,6 @@ pub mod camera;
 /// and move their cursor around the map
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState {
-    Paused,
     MoveCursor,
     MoveUnit,
     ShowUnits,
@@ -68,7 +67,7 @@ pub struct State {
     pub runstate: RunState,
     pub godmode: bool,
     pub verbose: bool,
-	pub fuzz_test: bool,
+    pub fuzz_test: bool,
 }
 
 impl State {
@@ -89,23 +88,22 @@ impl GameState for State {
         camera::render_camera(&self.ecs, ctx);
         gui::draw_ui(&self.ecs, ctx);
 
-		if self.fuzz_test {
-			ctx.key = Some(VirtualKeyCode::A);
-		}
+        if self.fuzz_test {
+            ctx.key = Some(VirtualKeyCode::A);
+        }
 
+        self.run_systems();
         match self.runstate {
             RunState::MoveCursor => {
-                self.run_systems();
                 self.runstate = player_input(self, ctx);
             }
             RunState::MoveUnit => {
-                self.run_systems();
                 self.runstate = unit_input(self, ctx);
             }
             RunState::ShowUnits => {
                 let result = unit_list(self, ctx);
                 match result {
-                    gui::MenuResult::Cancel => self.runstate = RunState::Paused,
+                    gui::MenuResult::Cancel => self.runstate = RunState::MoveCursor,
                     gui::MenuResult::Selected => {
                         self.runstate = RunState::MoveUnit;
                     }
@@ -113,21 +111,17 @@ impl GameState for State {
                 }
             }
             RunState::SelectedFort => {
-                self.run_systems();
                 self.runstate = fort_input(self, ctx);
             }
             RunState::ShowForts => {
                 let result = fort_list(self, ctx);
                 match result {
-                    gui::MenuResult::Cancel => self.runstate = RunState::Paused,
+                    gui::MenuResult::Cancel => self.runstate = RunState::MoveCursor,
                     gui::MenuResult::Selected => {
                         self.runstate = RunState::SelectedFort;
                     }
                     gui::MenuResult::NoResponse => {}
                 }
-            }
-            _ => {
-                self.runstate = player_input(self, ctx);
             }
         }
     }
@@ -146,7 +140,7 @@ fn main() -> BError {
         runstate: RunState::MoveCursor,
         godmode: false,
         verbose: false,
-		fuzz_test: false,
+        fuzz_test: false,
     };
 
     for arg in env::args().skip(1) {
@@ -163,7 +157,7 @@ fn main() -> BError {
                     gs.godmode = true
                 }
                 "-verbose" => gs.verbose = true,
-				"-fuzz_test" => gs.fuzz_test = true,
+                "-fuzz_test" => gs.fuzz_test = true,
                 _ => {}
             }
         }
@@ -192,7 +186,7 @@ fn main() -> BError {
     spawner::spawn_player_entities(&mut gs.ecs, position, range, PlayerOrder::PlayerOne);
     gs.ecs.insert(gamelog::GameLog {
         entries: vec!["Welcome to Civlike!".to_string()],
-		message_type: vec![MessageType::Other],		
+        message_type: vec![MessageType::Other],
     });
 
     main_loop(context, gs)

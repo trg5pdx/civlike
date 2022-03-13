@@ -3,7 +3,8 @@ use rand::{thread_rng, Rng};
 use specs::prelude::*;
 
 use crate::{
-    xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, Unit, Viewshed, TileType
+    xy_idx, BlocksTile, Fort, Map, Name, Player, PlayerOrder, Position, Renderable, TileType, Unit,
+    Viewshed,
 };
 
 fn player(ecs: &mut World, position: (i32, i32), order: PlayerOrder) -> Entity {
@@ -147,12 +148,13 @@ pub fn generate_coordinates(ecs: &World, x_range: (i32, i32), y_range: (i32, i32
         let y: i32 = rng.gen_range(y_range.0..y_range.1);
 
         let idx = xy_idx(x, y);
-        
+
         // Checking specific tile type since the functions for populating the blocked
         // map haven't been ran yet as this occurs before the main game loop runs
-        if (map.tiles[idx] != TileType::Ice) &&
-           (map.tiles[idx] != TileType::Mountain) &&
-           (map.tiles[idx] != TileType::Water) {
+        if (map.tiles[idx] != TileType::Ice)
+            && (map.tiles[idx] != TileType::Mountain)
+            && (map.tiles[idx] != TileType::Water)
+        {
             position = Some((x, y));
             break;
         }

@@ -9,8 +9,8 @@
 
 use crate::PlayerOrder;
 use crate::{
-    xy_idx, Fort, GameLog, Map, Moving, Name, Player, Position, TileType, Unit, VIEW_HEIGHT,
-    VIEW_WIDTH, MessageType
+    xy_idx, Fort, GameLog, Map, MessageType, Moving, Name, Player, Position, TileType, Unit,
+    VIEW_HEIGHT, VIEW_WIDTH,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -49,29 +49,21 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
     let map = ecs.fetch::<Map>();
     let units = ecs.read_storage::<Unit>();
     let moving = ecs.read_storage::<Moving>();
+    let mut pos: Position;
 
     for (_player, cursor_pos) in (&player, &position).join() {
-        let mut pos: Option<Position> = None;
         let location;
         let tile;
         let controlled;
+        pos = *cursor_pos;
 
         for (_mover, _unit, unit_pos) in (&moving, &units, &position).join() {
-            pos = Some(*unit_pos);
+            pos = *unit_pos;
         }
 
-        match pos {
-            Some(unit_pos) => {
-                location = format!("Pos: ({}, {})", unit_pos.x, unit_pos.y);
-                tile = &map.tiles[xy_idx(unit_pos.x, unit_pos.y)]; 
-                controlled = &map.claimed_tiles[xy_idx(unit_pos.x, unit_pos.y)];
-            },
-            None => {
-                location = format!("Pos: ({}, {})", cursor_pos.x, cursor_pos.y);
-                tile = &map.tiles[xy_idx(cursor_pos.x, cursor_pos.y)]; 
-                controlled = &map.claimed_tiles[xy_idx(cursor_pos.x, cursor_pos.y)];
-            },
-        }
+        location = format!("Pos: ({}, {})", pos.x, pos.y);
+        tile = &map.tiles[xy_idx(pos.x, pos.y)];
+        controlled = &map.claimed_tiles[xy_idx(pos.x, pos.y)];
 
         let tile_str = match tile {
             TileType::Mountain => "Mountain".to_string(),
@@ -90,31 +82,49 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
 
         // Write out the tile type and the current position to the gui box
         ctx.print_color(x + 1, y + 1, RGB::named(YELLOW), bg, &location);
-        ctx.print_color(x + 1, y + 2, RGB::named(YELLOW), bg, &tile_str.to_string());
-        ctx.print_color(x + 1, y + 3, RGB::named(YELLOW), bg, &claims);
+        ctx.print_color(x + 1, y + 2, RGB::named(GREEN), bg, &tile_str.to_string());
+        ctx.print_color(x + 1, y + 3, RGB::named(ORANGE), bg, &claims);
 
-        if let Some(pos) = pos {
-            display_unit_info(ecs, ctx, x, y, pos, bg);
-            display_fort_info(ecs, ctx, x, y, pos, bg);
-        }
+        display_unit_info(ecs, ctx, x, y, pos, bg);
+        display_fort_info(ecs, ctx, x, y, pos, bg);
     }
 }
 
-fn display_unit_info(ecs: &World, ctx: &mut BTerm, x: usize, y: usize, cursor_pos: Position, bg: RGB) {
+fn display_unit_info(
+    ecs: &World,
+    ctx: &mut BTerm,
+    x: usize,
+    y: usize,
+    cursor_pos: Position,
+    bg: RGB,
+) {
     let units = ecs.read_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
 
     for (unit, unit_pos, unit_name) in (&units, &positions, &names).join() {
         if (unit_pos.x == cursor_pos.x) && (unit_pos.y == cursor_pos.y) {
-            ctx.print_color(x + 1, y + 46, RGB::named(CYAN), bg, format!("{} stats:", unit_name.name));
+            ctx.print_color(
+                x + 1,
+                y + 46,
+                RGB::named(CYAN),
+                bg,
+                format!("{} stats:", unit_name.name),
+            );
             let unit_stats = format!("Hlth: {} Str: {}", unit.health, unit.strength);
             ctx.print_color(x + 1, y + 48, RGB::named(CYAN), bg, unit_stats);
         }
     }
 }
 
-fn display_fort_info(ecs: &World, ctx: &mut BTerm, x: usize, y: usize, cursor_pos: Position, bg: RGB) {
+fn display_fort_info(
+    ecs: &World,
+    ctx: &mut BTerm,
+    x: usize,
+    y: usize,
+    cursor_pos: Position,
+    bg: RGB,
+) {
     let forts = ecs.read_storage::<Fort>();
     let positions = ecs.read_storage::<Position>();
     let names = ecs.read_storage::<Name>();
@@ -127,27 +137,40 @@ fn display_fort_info(ecs: &World, ctx: &mut BTerm, x: usize, y: usize, cursor_po
                 PlayerOrder::PlayerOne => fort_info = "Player1's Fort".to_string(),
                 PlayerOrder::PlayerTwo => fort_info = "Player2's Fort".to_string(),
             }
-            ctx.print_color(x + 1, y + 6, RGB::named(YELLOW), bg, fort_info);
+            ctx.print_color(x + 1, y + 6, RGB::named(WHITE), bg, fort_info);
 
             let fort_option_name = format!("Fort name: {}", fort_name.name);
-            ctx.print_color(x + 1, y + 7, RGB::named(YELLOW), bg, fort_option_name);
+            ctx.print_color(x + 1, y + 7, RGB::named(WHITE), bg, fort_option_name);
         }
     }
 }
 
 fn draw_message_box(ecs: &World, ctx: &mut BTerm) {
-    ctx.draw_box(0, VIEW_HEIGHT, VIEW_WIDTH - 1, 9, RGB::named(WHITE), RGB::named(BLACK));
-    
-    ctx.print_color(2, VIEW_HEIGHT, RGB::named(WHITE), RGB::named(BLACK), "[Message Log]".to_string());
+    ctx.draw_box(
+        0,
+        VIEW_HEIGHT,
+        VIEW_WIDTH - 1,
+        9,
+        RGB::named(WHITE),
+        RGB::named(BLACK),
+    );
+
+    ctx.print_color(
+        2,
+        VIEW_HEIGHT,
+        RGB::named(WHITE),
+        RGB::named(BLACK),
+        "[Message Log]".to_string(),
+    );
 
     let log = ecs.fetch::<GameLog>();
     let mut y = VIEW_HEIGHT + 1;
     for (message, message_type) in log.entries.iter().rev().zip(log.message_type.iter().rev()) {
         if y < 49 {
             let fg = match message_type {
-                MessageType::Build => RGB::named(YELLOW), 
-                MessageType::Claim => RGB::named(SEAGREEN), 
-                MessageType::Move => RGB::named(LIGHTBLUE), 
+                MessageType::Build => RGB::named(YELLOW),
+                MessageType::Claim => RGB::named(SEAGREEN),
+                MessageType::Move => RGB::named(LIGHTBLUE),
                 MessageType::Error => RGB::named(SALMON),
                 MessageType::Other => RGB::named(WHITE),
             };

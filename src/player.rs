@@ -59,7 +59,7 @@ pub fn teleport_player(unit_pos: Position, ecs: &mut World) {
 /// Grabs input for the cursor to let it be moved around or for it to open a menu or close the game
 pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
     match ctx.key {
-        None => return RunState::Paused,
+        None => return RunState::MoveCursor,
         Some(key) => match key {
             VirtualKeyCode::A => {
                 let res = try_move_player(-1, 0, &mut gs.ecs);
@@ -80,7 +80,7 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             VirtualKeyCode::I => return RunState::ShowUnits,
             VirtualKeyCode::F => return RunState::ShowForts,
             VirtualKeyCode::Escape => std::process::exit(0),
-            _ => return RunState::Paused,
+            _ => return RunState::MoveCursor,
         },
     }
     RunState::MoveCursor

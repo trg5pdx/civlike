@@ -8,8 +8,8 @@
 
 use crate::spawner::*;
 use crate::{
-    teleport_player, xy_idx, Fort, GameLog, Map, Player, PlayerOrder, Position, RunState, Selected,
-    State, World, MessageType
+    teleport_player, xy_idx, Fort, GameLog, Map, MessageType, Player, PlayerOrder, Position,
+    RunState, Selected, State, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -135,7 +135,7 @@ pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                         teleport_player(pos, &mut gs.ecs);
                     }
                 }
-                return RunState::Paused;
+                return RunState::MoveCursor;
             }
             VirtualKeyCode::I => match unmark_selected_fort(&mut gs.ecs) {
                 None => {
@@ -143,7 +143,7 @@ pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                 }
                 Some(pos) => {
                     teleport_player(pos, &mut gs.ecs);
-                    return RunState::Paused;
+                    return RunState::MoveCursor;
                 }
             },
             _ => {}

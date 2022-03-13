@@ -7,8 +7,8 @@
 
 use crate::spawner::*;
 use crate::{
-    error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, Moving, Player,
-    PlayerOrder, Position, RunState, State, Unit, Viewshed, World, MessageType
+    error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, MessageType, Moving,
+    Player, PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -146,7 +146,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                 }
                 Some(pos) => {
                     teleport_player(pos, &mut gs.ecs);
-                    return RunState::Paused;
+                    return RunState::MoveCursor;
                 }
             },
             _ => {}

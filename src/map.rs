@@ -46,7 +46,6 @@ pub struct Map {
 }
 
 impl Map {
-    // Idea for code generation came from: https://gillesleblanc.wordpress.com/2012/10/16/creating-a-random-2d-game-world-map/
     pub fn new_map() -> Map {
         let mut map = Map {
             tiles: vec![TileType::Water; MAPCOUNT],
@@ -59,6 +58,7 @@ impl Map {
             claimed_tiles: vec![NoPlayer; MAPCOUNT],
         };
 
+        // Idea for map generation came from: https://gillesleblanc.wordpress.com/2012/10/16/creating-a-random-2d-game-world-map/
         let perlin = generate_heightmap();
 
         for y in 0..map.height {

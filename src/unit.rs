@@ -214,8 +214,8 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
                 for (_fort, entity) in (&forts, &entities).join() {
                     let entities_at_location = &map.tile_content[idx];
 
-                    for i in 0..entities_at_location.len() {
-                        if entities_at_location[i] == entity {
+                    for current_entity in entities_at_location.iter() {
+                        if *current_entity == entity {
                             fort_at_pos = true;
                         }
                     }

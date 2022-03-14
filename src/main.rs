@@ -136,13 +136,11 @@ impl GameState for State {
         if let Some(state) = expected_state {
             if state.second.is_some() {
                 assert!((self.runstate == state.first) || (self.runstate == state.second.unwrap()));
-            } else {
-                if self.runstate != state.first {
-                    panic!(
-                        "Error: runstates don't match! States: {:?} {:?}; Key: {:?}",
-                        self.runstate, state.first, ctx.key
-                    );
-                }
+            } else if self.runstate != state.first {
+				panic!(
+					"Error: runstates don't match! States: {:?} {:?}; Key: {:?}",
+					self.runstate, state.first, ctx.key
+				);
             }
         }
     }

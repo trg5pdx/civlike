@@ -44,19 +44,19 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
     // Draws the side box
     ctx.draw_box(x, y, width, height, RGB::named(WHITE), bg);
 
-    let position = ecs.read_storage::<Position>();
-    let player = ecs.read_storage::<Player>();
+    let positions = ecs.read_storage::<Position>();
+    let players = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
     let units = ecs.read_storage::<Unit>();
     let moving = ecs.read_storage::<Moving>();
     let mut pos: Position;
 
-    for (_player, cursor_pos) in (&player, &position).join() {
+    for (player, cursor_pos) in (&players, &positions).join() {
         pos = *cursor_pos;
 
         // Grabbing the position of the unit in the case that theres a moving unit
         // So the units information is printed instead of the cursors position
-        for (_mover, _unit, unit_pos) in (&moving, &units, &position).join() {
+        for (_mover, _unit, unit_pos) in (&moving, &units, &positions).join() {
             pos = *unit_pos;
         }
 
@@ -83,6 +83,28 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
         ctx.print_color(x + 1, y + 1, RGB::named(YELLOW), bg, &location);
         ctx.print_color(x + 1, y + 2, RGB::named(GREEN), bg, &tile_str.to_string());
         ctx.print_color(x + 1, y + 3, RGB::named(ORANGE), bg, &claims);
+
+        ctx.print_color(
+            x + 1,
+            y + 5,
+            RGB::named(WHITE),
+            bg,
+            "You have: ".to_string(),
+        );
+        ctx.print_color(
+            x + 1,
+            y + 6,
+            RGB::named(CYAN),
+            bg,
+            format!("{} units", player.unit_count),
+        );
+        ctx.print_color(
+            x + 1,
+            y + 7,
+            RGB::named(BURLYWOOD3),
+            bg,
+            format!("{} forts", player.fort_count),
+        );
 
         display_unit_info(ecs, ctx, x, y, pos, bg);
         display_fort_info(ecs, ctx, x, y, pos, bg);
@@ -135,10 +157,10 @@ fn display_fort_info(
                 PlayerOrder::PlayerOne => "Player1's Fort".to_string(),
                 PlayerOrder::PlayerTwo => "Player2's Fort".to_string(),
             };
-            ctx.print_color(x + 1, y + 6, RGB::named(WHITE), bg, fort_info);
+            ctx.print_color(x + 1, y + 9, RGB::named(BURLYWOOD3), bg, fort_info);
 
             let fort_option_name = format!("Fort name: {}", fort_name.name);
-            ctx.print_color(x + 1, y + 7, RGB::named(WHITE), bg, fort_option_name);
+            ctx.print_color(x + 1, y + 10, RGB::named(BURLYWOOD3), bg, fort_option_name);
         }
     }
 }

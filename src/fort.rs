@@ -37,6 +37,9 @@ fn build_unit(ecs: &mut World) -> Option<(i32, i32)> {
 
         for (player, _entity) in (&players, &entities).join() {
             player_order = Some(player.order);
+            if player.unit_count > 25 {
+                return None;
+            }
         }
 
         if let Some(ref owner) = player_order {

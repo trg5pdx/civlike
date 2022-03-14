@@ -7,8 +7,8 @@
 
 use crate::spawner::*;
 use crate::{
-    error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, MessageType, Moving,
-    Player, PlayerOrder, Position, RunState, State, Unit, Viewshed, World, Fort
+    error_handling, teleport_player, xy_idx, FailedMoveReason, Fort, GameLog, Map, MessageType,
+    Moving, Player, PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -201,6 +201,9 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
 
         for (player, _entity) in (&players, &entities).join() {
             player_order = Some(player.order);
+            if player.fort_count > 25 {
+                return None;
+            }
         }
 
         if let Some(ref owner) = player_order {
@@ -210,7 +213,7 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
 
                 for (_fort, entity) in (&forts, &entities).join() {
                     let entities_at_location = &map.tile_content[idx];
-                     
+
                     for i in 0..entities_at_location.len() {
                         if entities_at_location[i] == entity {
                             fort_at_pos = true;
@@ -218,7 +221,7 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
                     }
                 }
 
-                if (map.claimed_tiles[idx] == *owner) && !fort_at_pos  {
+                if (map.claimed_tiles[idx] == *owner) && !fort_at_pos {
                     new_fort_pos = Some((pos.x, pos.y));
 
                     // Claiming the tiles surrounding this tile if a fort can be built here

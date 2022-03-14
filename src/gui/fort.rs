@@ -38,7 +38,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let mut player_forts: Vec<Entity> = Vec::new();
     let mut y;
     let y_check = 25_i32.checked_sub((count / 2).try_into().unwrap());
-    
+
     if y_check.is_some() {
         y = y_check.unwrap();
     } else {
@@ -61,13 +61,7 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
         .enumerate()
     {
         ctx.set(17, y, RGB::named(WHITE), bg, to_cp437('('));
-        ctx.set(
-            18,
-            y,
-            RGB::named(YELLOW),
-            RGB::named(BLACK),
-            97 + i as FontCharType,
-        );
+        ctx.set(18, y, RGB::named(YELLOW), bg, 97 + i as FontCharType);
         ctx.set(19, y, RGB::named(WHITE), bg, to_cp437(')'));
 
         ctx.print(21, y, &name.name.to_string());

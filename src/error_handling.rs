@@ -1,7 +1,7 @@
-use specs::prelude::*;
+use crate::{ExpectedFuzzState, FailedMoveReason, GameLog, MessageType, RunState};
 use bracket_lib::prelude::*;
 use rand::{thread_rng, Rng};
-use crate::{FailedMoveReason, GameLog, MessageType, RunState, ExpectedFuzzState};
+use specs::prelude::*;
 
 pub fn handle_move_result(
     ecs: &mut World,
@@ -71,27 +71,27 @@ pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzSta
         23 => VirtualKeyCode::X,
         24 => VirtualKeyCode::Y,
         25 => VirtualKeyCode::Z,
-        _ => { VirtualKeyCode::Escape }
+        _ => VirtualKeyCode::Escape,
     };
-    
+
     ctx.key = Some(gen_key);
-    
+
     // These first two cases are for the fort/unit menus, it returns two different types
     // to signal those two are the acceptable states for the game to be in
     match initial_state {
         RunState::ShowUnits => {
             expected_state.first = RunState::ShowUnits;
             expected_state.second = Some(RunState::MoveUnit);
-        },
+        }
         RunState::ShowForts => {
             expected_state.first = RunState::ShowForts;
             expected_state.second = Some(RunState::SelectedFort);
-        },
+        }
         RunState::MoveUnit => {
             if key == 8 {
                 expected_state.first = RunState::MoveCursor;
             }
-        },
+        }
         RunState::SelectedFort => {
             if (key == 1) || (key == 8) {
                 expected_state.first = RunState::MoveCursor;

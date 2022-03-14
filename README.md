@@ -39,6 +39,11 @@ the only two flags that exist are:
 (Warning, will print out a lot of messages)      
 `-godmode` for now, the only thing it does is extend the view range of your 
 units to be very far, so you can get a good look at how the world generates.       
+`-fuzz_test` is a test where the game will randomly generate an input and try it,
+used as a way to find bugs in the games code. If you run it, the only way you can
+exit it is by killing the game, either by hitting Ctrl-c in the terminal window,
+or by using Alt-F4 to kill it (If your desktop environment doesn't use Alt-F4,
+then use the combination that it uses to kill a window)      
 
 To run these flags, run either:
 

@@ -44,7 +44,7 @@ pub fn unit(
         })
         .with(Renderable {
             glyph: to_cp437('i'),
-            fg: RGB::named(YELLOW),
+            fg: RGB::named(CYAN),
             bg: RGB::named(BLACK),
             render_order: 1,
         })
@@ -71,7 +71,7 @@ pub fn fort(ecs: &mut World, position: (i32, i32), name: String, owner: PlayerOr
         })
         .with(Renderable {
             glyph: to_cp437('M'),
-            fg: RGB::named(BROWN1),
+            fg: RGB::named(BURLYWOOD3),
             bg: RGB::named(BLACK),
             render_order: 1,
         })

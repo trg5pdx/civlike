@@ -52,18 +52,17 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
     let mut pos: Position;
 
     for (_player, cursor_pos) in (&player, &position).join() {
-        let location;
-        let tile;
-        let controlled;
         pos = *cursor_pos;
 
+        // Grabbing the position of the unit in the case that theres a moving unit
+        // So the units information is printed instead of the cursors position
         for (_mover, _unit, unit_pos) in (&moving, &units, &position).join() {
             pos = *unit_pos;
         }
 
-        location = format!("Pos: ({}, {})", pos.x, pos.y);
-        tile = &map.tiles[xy_idx(pos.x, pos.y)];
-        controlled = &map.claimed_tiles[xy_idx(pos.x, pos.y)];
+        let location = format!("Pos: ({}, {})", pos.x, pos.y);
+        let tile = &map.tiles[xy_idx(pos.x, pos.y)];
+        let controlled = &map.claimed_tiles[xy_idx(pos.x, pos.y)];
 
         let tile_str = match tile {
             TileType::Mountain => "Mountain".to_string(),
@@ -131,12 +130,11 @@ fn display_fort_info(
 
     for (fort, fort_pos, fort_name) in (&forts, &positions, &names).join() {
         if (fort_pos.x == cursor_pos.x) && (fort_pos.y == cursor_pos.y) {
-            let fort_info;
-            match fort.owner {
-                PlayerOrder::NoPlayer => fort_info = "Not Owned".to_string(),
-                PlayerOrder::PlayerOne => fort_info = "Player1's Fort".to_string(),
-                PlayerOrder::PlayerTwo => fort_info = "Player2's Fort".to_string(),
-            }
+            let fort_info = match fort.owner {
+                PlayerOrder::NoPlayer => "Not Owned".to_string(),
+                PlayerOrder::PlayerOne => "Player1's Fort".to_string(),
+                PlayerOrder::PlayerTwo => "Player2's Fort".to_string(),
+            };
             ctx.print_color(x + 1, y + 6, RGB::named(WHITE), bg, fort_info);
 
             let fort_option_name = format!("Fort name: {}", fort_name.name);

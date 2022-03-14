@@ -8,7 +8,7 @@
 use crate::spawner::*;
 use crate::{
     error_handling, teleport_player, xy_idx, FailedMoveReason, GameLog, Map, MessageType, Moving,
-    Player, PlayerOrder, Position, RunState, State, Unit, Viewshed, World,
+    Player, PlayerOrder, Position, RunState, State, Unit, Viewshed, World, Fort
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -195,6 +195,7 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
         let entities = ecs.entities();
         let positions = ecs.read_storage::<Position>();
         let units = ecs.read_storage::<Unit>();
+        let forts = ecs.read_storage::<Fort>();
         let moving_units = ecs.read_storage::<Moving>();
         let mut map = ecs.fetch_mut::<Map>();
 
@@ -205,7 +206,19 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
         if let Some(ref owner) = player_order {
             for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
-                if map.claimed_tiles[idx] == *owner {
+                let mut fort_at_pos = false;
+
+                for (_fort, entity) in (&forts, &entities).join() {
+                    let entities_at_location = &map.tile_content[idx];
+                     
+                    for i in 0..entities_at_location.len() {
+                        if entities_at_location[i] == entity {
+                            fort_at_pos = true;
+                        }
+                    }
+                }
+
+                if (map.claimed_tiles[idx] == *owner) && !fort_at_pos  {
                     new_fort_pos = Some((pos.x, pos.y));
 
                     // Claiming the tiles surrounding this tile if a fort can be built here

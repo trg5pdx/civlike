@@ -32,6 +32,7 @@ pub use gui::fort::*;
 pub use gui::unit::*;
 
 mod error_handling;
+use crate::error_handling::generate_key;
 mod heightmap;
 mod spawner;
 
@@ -45,7 +46,7 @@ pub mod camera;
 
 /// Marks what state the games running in to allow the player to open their unit/fort lists
 /// and move their cursor around the map
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RunState {
     MoveCursor,
     MoveUnit,
@@ -58,6 +59,11 @@ pub enum RunState {
 pub enum FailedMoveReason {
     TileBlocked,
     UnableToGrabEntity,
+}
+
+pub struct ExpectedFuzzState {
+	first: RunState,
+	second: Option<RunState>,	
 }
 
 /// Contains the game world and all of it's entities within it, and an enum for denoting
@@ -84,12 +90,14 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
+		let mut expected_state: Option<ExpectedFuzzState> = None;
+
         ctx.cls();
         camera::render_camera(&self.ecs, ctx);
         gui::draw_ui(&self.ecs, ctx);
 
         if self.fuzz_test {
-            ctx.key = Some(VirtualKeyCode::A);
+			expected_state = Some(generate_key(self.runstate, ctx));	
         }
 
         self.run_systems();
@@ -124,6 +132,16 @@ impl GameState for State {
                 }
             }
         }
+
+		if let Some(state) = expected_state {
+			if state.second.is_some() {
+				println!("States: {:?} {:?} {:?}; key: {:?}", self.runstate, state.first, state.second.unwrap(), ctx.key);
+				assert!((self.runstate == state.first) || (self.runstate == state.second.unwrap()));
+			} else {
+				println!("States: {:?} {:?}; key: {:?}", self.runstate, state.first, ctx.key);
+				assert_eq!(self.runstate, state.first);
+			}
+		}
     }
 }
 

@@ -36,7 +36,14 @@ pub fn fort_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let count = fort_list.count();
 
     let mut player_forts: Vec<Entity> = Vec::new();
-    let mut y = (25 - (count / 2)) as i32;
+    let mut y;
+    let y_check = 25_i32.checked_sub((count / 2).try_into().unwrap());
+    
+    if y_check.is_some() {
+        y = y_check.unwrap();
+    } else {
+        y = 25
+    }
 
     ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), bg);
     ctx.print_color(18, y - 2, RGB::named(YELLOW), bg, "Fort List");

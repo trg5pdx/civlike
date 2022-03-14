@@ -90,13 +90,12 @@ pub fn render_camera(ecs: &World, ctx: &mut BTerm) {
 fn get_tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let glyph;
     let mut fg;
-    let bg;
 
-    match map.claimed_tiles[idx] {
-        PlayerOrder::NoPlayer => bg = RGB::named(BLACK),
-        PlayerOrder::PlayerOne => bg = RGB::named(PINK),
-        PlayerOrder::PlayerTwo => bg = RGB::named(RED),
-    }
+    let bg = match map.claimed_tiles[idx] {
+        PlayerOrder::NoPlayer => RGB::named(BLACK),
+        PlayerOrder::PlayerOne => RGB::named(PINK),
+        PlayerOrder::PlayerTwo => RGB::named(RED),
+    };
 
     match map.tiles[idx] {
         TileType::Mountain => {

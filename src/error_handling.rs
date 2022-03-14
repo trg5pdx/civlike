@@ -12,19 +12,18 @@ pub fn handle_move_result(
     match res {
         Ok((x, y)) => {
             if verbose {
-                log.entries
-                    .push(format!("Moved entity to x: {} y: {}", x, y));
+                log.entries.push(format!("Moved entity to ({}, {})", x, y));
                 log.message_type.push(MessageType::Move);
             }
         }
         Err(e) => match e {
             FailedMoveReason::TileBlocked => {
                 log.entries
-                    .push("ERROR: Tile entity tried to move on is blocked".to_string());
+                    .push("Tile entity tried to move on is blocked".to_string());
                 log.message_type.push(MessageType::Error);
             }
             FailedMoveReason::UnableToGrabEntity => {
-                log.entries.push("ERROR: Failed to grab entity".to_string());
+                log.entries.push("Failed to grab entity".to_string());
                 log.message_type.push(MessageType::Error);
             }
         },

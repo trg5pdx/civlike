@@ -142,7 +142,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             }
             VirtualKeyCode::I => match unmark_moving_unit(&mut gs.ecs) {
                 None => {
-                    panic!("ERROR: Failed to unmark moving unit")
+                    panic!("Failed to unmark moving unit")
                 }
                 Some(pos) => {
                     teleport_player(pos, &mut gs.ecs);

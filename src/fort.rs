@@ -132,7 +132,7 @@ pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
 
                 match unmark_selected_fort(&mut gs.ecs) {
                     None => {
-                        panic!("ERROR: Failed to unmark selected fort")
+                        panic!("Failed to unmark selected fort")
                     }
                     Some(pos) => {
                         teleport_player(pos, &mut gs.ecs);
@@ -142,7 +142,7 @@ pub fn fort_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
             }
             VirtualKeyCode::I => match unmark_selected_fort(&mut gs.ecs) {
                 None => {
-                    panic!("ERROR: Failed to unmark selected fort")
+                    panic!("Failed to unmark selected fort")
                 }
                 Some(pos) => {
                     teleport_player(pos, &mut gs.ecs);

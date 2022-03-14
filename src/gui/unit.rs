@@ -36,13 +36,7 @@ pub fn unit_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let count = unit_list.count();
 
     let mut owned_units: Vec<Entity> = Vec::new();
-    let y_check = 25_i32.checked_sub((count / 2).try_into().unwrap());
-
-    let mut y = if let Some(yc) = y_check {
-        yc
-    } else {
-        25
-    };
+    let mut y = 25 - (count / 2) as i32;
 
     ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), bg);
     ctx.print_color(18, y - 2, RGB::named(YELLOW), bg, "Unit List");

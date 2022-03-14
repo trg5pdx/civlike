@@ -86,17 +86,26 @@ Fort Mode:
 by another unit      
 [I] Switch back to cursor mode       
 
+Unit/Fort Menu Mode:
+[Esc] Exits the menu without selecting anything       
+[A-Z] For selecting something that corresponds to a letter      
+
 # Reflection on developing civlike
 Overall, I think the game's development turned out alright considering where I 
 started with my knowledge. This is the first actual game I've tried to develop, 
 and it's the first time I've tried to build a game using an entity control 
-system model, which was difficult to work with at first. The main problem I kept
- running into is that I was approaching building the game from a object oriented 
+system model, which was difficult to work with at first. The main problem I kept 
+running into is that I was approaching building the game from a object oriented 
 mindset and so there was a bit of a learning hurdle to get over with 
-understanding how to work with an ECS. Along with following the rust roguelike 
+understanding how to work with an ECS. That was one thing I had a lot of trouble
+with, I kept thinking about trying to set it up using datastructures rather than
+by doing it the ECS way. If I had a better understanding of ECS from the 
+beginning, I think I would have been able to get farther along with the game, 
+but I'm happy with where I ended up. Along with following the rust roguelike 
 tutorial, I also referred to other documentation online about how to build 
 roguelike games, which I came across a guide on how to generate terrain using 
-heightmaps, which I used to build the map in the game. 
+heightmaps, and found that the bracket-lib library had an example using a 
+perlin noise map, which I used those to build the map in the game. 
 
 One of the big issues I ran into when trying to build the game was figuring out 
 a way to handle moving a unit, which I kept thinking about it through 
@@ -114,10 +123,10 @@ vector in the map that keeps track of who claims what tile using the same enum.
 Thanks to this project, I became more proficient with programming in Rust, 
 I learned the basics of how to build a game, and I learned about building games
  using Entity Control Systems, which has helped me think about how to approach 
-programming problems in a different way. Prior to this, most of my programming
-experience prior to this project was involing object-oriented programming,
-so I would approach most problems from that mindset, so learning to work with
-a different system was helpful in bettering my problem solving skils. 
+programming problems in a different way. Overall, I feel like I learned a lot 
+and got better with programming while working on this project. I also really 
+enjoyed working on it, and once I got over my anxiety and got through working 
+on the unit ownership system, I had a lot of fun working on it.   
 
 # Credits
 

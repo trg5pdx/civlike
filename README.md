@@ -86,7 +86,7 @@ Fort Mode:
 by another unit      
 [I] Switch back to cursor mode       
 
-Unit/Fort Menu Mode:
+Unit/Fort Menu Mode:      
 [Esc] Exits the menu without selecting anything       
 [A-Z] For selecting something that corresponds to a letter      
 

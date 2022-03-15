@@ -96,15 +96,18 @@ impl Map {
         for (i, tile) in self.tiles.iter_mut().enumerate() {
             if *tile == TileType::Ice || *tile == TileType::Mountain || *tile == TileType::Water {
                 self.blocked[i] = true;
-            } else {
-                // Doing this to unmark tiles that were previously marked as blocked
-                self.blocked[i] = false;
-            }
+            } 
         }
     }
     pub fn clear_content_index(&mut self) {
         for content in self.tile_content.iter_mut() {
             content.clear();
+        }
+    }
+    /// Clears the list of currently blocked tiles to refresh what tiles are currently blocked
+    pub fn clear_blocked(&mut self) {
+        for tile in self.blocked.iter_mut() {
+            *tile = false;
         }
     }
 }

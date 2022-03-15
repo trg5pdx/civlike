@@ -29,6 +29,7 @@ impl<'a> System<'a> for MapIndexingSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (mut map, position, blockers, entities) = data;
 
+        map.clear_blocked();
         map.populate_blocked();
         map.clear_content_index();
         for (entity, position) in (&entities, &position).join() {

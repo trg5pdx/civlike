@@ -14,8 +14,10 @@ pub const MAPWIDTH: usize = 400;
 pub const MAPHEIGHT: usize = 300;
 pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 
-//! The work I did for decoupling the screen from the map came from here:
-//! https://bfnightly.bracketproductions.com/rustbook/chapter_41.html
+/*
+ The work I did for decoupling the screen from the map came from here:
+ https://bfnightly.bracketproductions.com/rustbook/chapter_41.html
+*/    
 pub const VIEW_WIDTH: usize = 60;
 pub const VIEW_HEIGHT: usize = 40;
 pub const VIEW_COUNT: usize = VIEW_WIDTH * VIEW_HEIGHT;

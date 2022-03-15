@@ -1,8 +1,8 @@
 //! Made by: Thomas Gardner, 2022
 //!
 //! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project. The unit_list and fort_list functions were built with help 
-//! from the rust roguelike tutorial, with them being modified versions of the 
+//! this project. The unit_list and fort_list functions were built with help
+//! from the rust roguelike tutorial, with them being modified versions of the
 //! inventory menu provided by the tutorial here:
 //! https://bfnightly.bracketproductions.com/rustbook/chapter_9.html
 //!

@@ -1,7 +1,7 @@
 //! Made by: Thomas Gardner, 2022
 //!
-//! Most of the code for this comes froms the rust roguelike tutorial linked 
-//! below, and it was pulled from src/player.rs and tweaked to work for units 
+//! Most of the code for this comes froms the rust roguelike tutorial linked
+//! below, and it was pulled from src/player.rs and tweaked to work for units
 //! rather than for moving player units.
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 

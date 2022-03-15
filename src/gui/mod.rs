@@ -1,8 +1,8 @@
 //! Made by: Thomas Gardner, 2022
 //!
 //! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project. This submodule is for handling the fuctions of drawing the 
-//! gui, with there being two seperate files for handling drawing the gui for 
+//! this project. This submodule is for handling the fuctions of drawing the
+//! gui, with there being two seperate files for handling drawing the gui for
 //! the fort and unit menus
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 

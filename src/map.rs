@@ -17,7 +17,7 @@ pub const MAPCOUNT: usize = MAPHEIGHT * MAPWIDTH;
 /*
  The work I did for decoupling the screen from the map came from here:
  https://bfnightly.bracketproductions.com/rustbook/chapter_41.html
-*/    
+*/
 pub const VIEW_WIDTH: usize = 60;
 pub const VIEW_HEIGHT: usize = 40;
 pub const VIEW_COUNT: usize = VIEW_WIDTH * VIEW_HEIGHT;
@@ -100,7 +100,7 @@ impl Map {
         for (i, tile) in self.tiles.iter_mut().enumerate() {
             if *tile == TileType::Ice || *tile == TileType::Mountain || *tile == TileType::Water {
                 self.blocked[i] = true;
-            } 
+            }
         }
     }
     pub fn clear_content_index(&mut self) {

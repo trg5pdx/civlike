@@ -1,7 +1,7 @@
 //! Made by: Thomas Gardner, 2022
 //!
 //! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project. This code was pulled from section 4.19: Decouple map size 
+//! this project. This code was pulled from section 4.19: Decouple map size
 //! from screen size.
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_41.html
 

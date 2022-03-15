@@ -1,5 +1,6 @@
-//! Code for this comes from the perlin-fractal example from the bracket-noise crate
+//! Made by: Thomas Gardner, 2022
 //!
+//! Code for this comes from the perlin-fractal example from the bracket-noise crate
 //! Link: https://github.com/amethyst/bracket-lib/tree/master/bracket-noise
 
 use crate::{xy_idx, MAPCOUNT, MAPHEIGHT, MAPWIDTH};

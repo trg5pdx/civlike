@@ -1,9 +1,8 @@
 //! Made by: Thomas Gardner, 2022
 //!
-//! The code for this comes from my work with src/player.rs and src/unit.rs, but adjusted for
-//! for working with forts; contains controls for creating units through forts, and a function
-//! to add the unit to the game
-//!
+//! The code for this comes from my work with src/player.rs and src/unit.rs, 
+//! but adjusted for working with forts; contains controls for creating units 
+//! through forts, and a function to add the unit to the game.
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use crate::spawner::*;

@@ -1,8 +1,9 @@
-//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project, will cite the tutorial for code that directly came from it
-//! to properly give credit
+//! Made by: Thomas Gardner, 2022
 //!
-//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project. This code was pulled from section 4.19: Decouple map size 
+//! from screen size.
+//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_41.html
 
 use crate::{xy_idx, Fort, Map, PlayerOrder, Position, Renderable, TileType};
 use bracket_lib::prelude::*;

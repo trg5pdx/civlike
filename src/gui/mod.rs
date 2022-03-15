@@ -1,11 +1,10 @@
+//! Made by: Thomas Gardner, 2022
+//!
 //! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project, will cite the tutorial for code that directly came from it
-//! to properly give credit
-//!
+//! this project. This submodule is for handling the fuctions of drawing the 
+//! gui, with there being two seperate files for handling drawing the gui for 
+//! the fort and unit menus
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
-//!
-//! This submodule is for handling the fuctions of drawing the gui, with there being two seperate
-//! files for handling drawing the gui for the fort and unit menus
 
 use crate::PlayerOrder;
 use crate::{
@@ -25,31 +24,26 @@ pub enum MenuResult {
     Selected,
 }
 
-/*
-The draw_ui function was provided by the rust roguelike tutorial, with it being tweaked for my usage.
-Link to the tutorial at the top of this file and in the README
-*/
 pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
     draw_sidebar(ecs, ctx);
     draw_message_box(ecs, ctx);
 }
 
 fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
-    let x = VIEW_WIDTH;
-    let y = 0;
-    let width = 19;
-    let height = VIEW_HEIGHT + 9;
-    let bg = RGB::named(BLACK);
-
-    // Draws the side box
-    ctx.draw_box(x, y, width, height, RGB::named(WHITE), bg);
-
     let positions = ecs.read_storage::<Position>();
     let players = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
     let units = ecs.read_storage::<Unit>();
     let moving = ecs.read_storage::<Moving>();
+
+    let x = VIEW_WIDTH;
+    let y = 0;
+    let width = 19;
+    let height = VIEW_HEIGHT + 9;
+    let bg = RGB::named(BLACK);
     let mut pos: Position;
+
+    ctx.draw_box(x, y, width, height, RGB::named(WHITE), bg);
 
     for (player, cursor_pos) in (&players, &positions).join() {
         pos = *cursor_pos;
@@ -165,6 +159,8 @@ fn display_fort_info(
     }
 }
 
+// The code for this came from section 2.7: User Interface
+// Link: https://bfnightly.bracketproductions.com/rustbook/chapter_8.html#adding-a-message-log
 fn draw_message_box(ecs: &World, ctx: &mut BTerm) {
     ctx.draw_box(
         0,

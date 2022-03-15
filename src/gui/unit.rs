@@ -1,12 +1,14 @@
-/*
-    The unit_list and fort_list functions were built with help from the rust roguelike tutorial,
-    with them being modified versions of the inventory menu provided by the tutorial here:
-    https://bfnightly.bracketproductions.com/rustbook/chapter_9.html
-
-    The tutorial has it's own system it uses for the inventory, but in my case I instead rely on
-    enums in the units/forts to denote ownership and use marker traits to tell other functions
-    which forts/units are currently selected by the player
-*/
+//! Made by: Thomas Gardner, 2022
+//!
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project. The unit_list and fort_list functions were built with help 
+//! from the rust roguelike tutorial, with them being modified versions of the 
+//! inventory menu provided by the tutorial here:
+//! https://bfnightly.bracketproductions.com/rustbook/chapter_9.html
+//!
+//! The tutorial has it's own system it uses for the inventory, but in my case I instead rely on
+//! enums in the units/forts to denote ownership and use marker traits to tell other functions
+//! which forts/units are currently selected by the player
 
 use crate::gui::MenuResult;
 use crate::PlayerOrder;

@@ -1,7 +1,7 @@
-//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project, will cite the tutorial for code that directly came from it
-//! to properly give credit
+//! Made by: Thomas Gardner, 2022
 //!
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project.
 //! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
 
 use bracket_lib::prelude::*;

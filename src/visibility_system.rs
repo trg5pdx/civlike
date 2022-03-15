@@ -1,8 +1,8 @@
-//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
-//! this project, will cite the tutorial for code that directly came from it
-//! to properly give credit
+//! Made by: Thomas Gardner, 2022
 //!
-//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_0.html
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project. This section of code comes from section 2.4: Field of View
+//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_5.html
 
 use crate::{xy_idx, Map, Position, Viewshed};
 use bracket_lib::prelude::{field_of_view, Point};

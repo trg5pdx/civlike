@@ -1,3 +1,10 @@
+//! Made by: Thomas Gardner, 2022
+//!
+//! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
+//! this project. The idea for using a seperate file for spawning entities
+//! came from section 2.8: Items and Inventory
+//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_9.html
+
 use bracket_lib::prelude::*;
 use rand::{thread_rng, Rng};
 use specs::prelude::*;

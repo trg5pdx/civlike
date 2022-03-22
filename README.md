@@ -10,6 +10,10 @@ with them. For the unit, you can walk around the map, claim tiles, and build
 forts on claimed tiles; you can also uncover new territory using a unit. For 
 forts, you can build more units with them.
 
+# Info on this branch
+This is the version of the project that was submitted as a final project for
+my rust class. This was forked to preserve its state when it was submitted.
+
 # How to build and run
 First, install rust before trying to build the game if you don't have rust 
 already. I recommend that you head over to rustup for instructions on how to 
@@ -93,7 +97,7 @@ Unit/Fort Menu Mode:
 # Reflection on developing civlike
 Overall, I think the game's development turned out alright considering where I 
 started with my knowledge. This is the first actual game I've tried to develop, 
-and it's the first time I've tried to build a game using an entity control 
+and it's the first time I've tried to build a game using an entity component 
 system model, which was difficult to work with at first. The main problem I kept 
 running into is that I was approaching building the game from a object oriented 
 mindset and so there was a bit of a learning hurdle to get over with 

@@ -35,50 +35,108 @@ pub fn unit_list(gs: &mut State, ctx: &mut BTerm) -> MenuResult {
     let unit_list = (&units, &entities)
         .join()
         .filter(|unit| unit.0.owner == player_enum);
-    let count = unit_list.count();
+    let count = unit_list.count() as u32;
 
-    let mut owned_units: Vec<Entity> = Vec::new();
-    let mut y = 25 - (count / 2) as i32;
+    let mut owned_units: Vec<(Entity, String)> = Vec::new();
+    let y = 15; 
 
-    ctx.draw_box(15, y - 2, 31, (count + 3) as i32, RGB::named(WHITE), bg);
-    ctx.print_color(18, y - 2, RGB::named(YELLOW), bg, "Unit List");
-    ctx.print_color(
-        18,
-        y + count as i32 + 1,
-        RGB::named(YELLOW),
-        bg,
-        "ESCAPE to cancel",
-    );
+	let height = 10;
+	let y_cord = y - 2;
 
-    for (i, (_unit, name, entity)) in (&units, &names, &entities)
+    ctx.draw_box(14, y - 2, 30, height, RGB::named(WHITE), bg);
+    ctx.print_color(18, y_cord, RGB::named(YELLOW), bg, "Unit List");
+    ctx.print_color(18, y_cord + height, RGB::named(YELLOW), bg, "ESCAPE to cancel");
+
+    for (_unit, name, entity) in (&units, &names, &entities)
         .join()
         .filter(|unit| unit.0.owner == player_enum)
-        .enumerate()
     {
-        ctx.set(17, y, RGB::named(WHITE), bg, to_cp437('('));
-        ctx.set(18, y, RGB::named(YELLOW), bg, 97 + i as FontCharType);
-        ctx.set(19, y, RGB::named(WHITE), bg, to_cp437(')'));
+        owned_units.push((entity, name.name.to_string()));
+    }
 
-        ctx.print(21, y, &name.name.to_string());
-        owned_units.push(entity);
-        y += 1;
+	let current_option = gs.last_option;
+	let mut offset = 0;
+	if count > 7 {
+		offset = count - 7;
+	}	
+	
+	for i in 0..7 {
+		let mut index = current_option + i;
+		if current_option > offset {
+			index = offset + i;
+		}
+		let width = index.to_string().len();
+		if index < count as u32 {
+			ctx.set(17, y + i, RGB::named(WHITE), bg, to_cp437('('));
+			ctx.print_color(18, y + i, RGB::named(YELLOW), bg, format!("{}", index + 1));
+				
+			ctx.set(18 + width, y + i, RGB::named(WHITE), bg, to_cp437(')'));
+			ctx.print(20 + width, y + i, owned_units[index as usize].1.clone());
+			
+		}
+		if index == current_option {
+			ctx.set(16, y + i, RGB::named(WHITE), bg, to_cp437('>')); 	
+		}
+	}
+
+    {
+        ctx.draw_box(14, y + 9, 30, 3, RGB::named(WHITE), bg);
+        ctx.print_color(16, y + 10, RGB::named(YELLOW), bg, format!("Selection: {}", gs.selected));
     }
 
     match ctx.key {
-        None => MenuResult::NoResponse,
-        Some(key) => match key {
-            VirtualKeyCode::Escape => MenuResult::Cancel,
-            _ => {
-                let selection = letter_to_option(key);
-                if selection > -1 && selection < count as i32 {
-                    let mut moving = gs.ecs.write_storage::<Moving>();
-                    moving
-                        .insert(owned_units[selection as usize], Moving {})
-                        .expect("Unable to mark unit as moving");
-                    return MenuResult::Selected;
-                }
-                MenuResult::NoResponse
+        None => { MenuResult::NoResponse }, 
+        Some(key) => {
+            match key {
+                VirtualKeyCode::Escape => MenuResult::Cancel,
+                VirtualKeyCode::Return | VirtualKeyCode::NumpadEnter => {
+					let result = gs.selected.parse::<u32>().unwrap();	
+					gs.selected = "1".to_string();
+ 
+                    if result <= count {
+                        let mut moving = gs.ecs.write_storage::<Moving>();
+						moving	
+                            .insert(owned_units[result as usize - 1].0, Moving {})
+                            .expect("Unable to mark fort as selected");
+                        gs.selected = String::new();
+                        MenuResult::Selected
+                    } else {
+                        gs.selected = String::new();
+                        MenuResult::NoResponse
+                    }
+                },
+                VirtualKeyCode::Back => {
+                    gs.selected.pop();
+					MenuResult::NoResponse
+                },
+				VirtualKeyCode::Key0 | VirtualKeyCode::Numpad0 => { gs.selected.push('0'); MenuResult::NoResponse },
+				VirtualKeyCode::Key1 | VirtualKeyCode::Numpad1 => { gs.selected.push('1'); MenuResult::NoResponse },
+				VirtualKeyCode::Key2 | VirtualKeyCode::Numpad2 => { gs.selected.push('2'); MenuResult::NoResponse },
+				VirtualKeyCode::Key3 | VirtualKeyCode::Numpad3 => { gs.selected.push('3'); MenuResult::NoResponse },
+				VirtualKeyCode::Key4 | VirtualKeyCode::Numpad4 => { gs.selected.push('4'); MenuResult::NoResponse },
+				VirtualKeyCode::Key5 | VirtualKeyCode::Numpad5 => { gs.selected.push('5'); MenuResult::NoResponse },
+				VirtualKeyCode::Key6 | VirtualKeyCode::Numpad6 => { gs.selected.push('6'); MenuResult::NoResponse },
+				VirtualKeyCode::Key7 | VirtualKeyCode::Numpad7 => { gs.selected.push('7'); MenuResult::NoResponse },
+				VirtualKeyCode::Key8 | VirtualKeyCode::Numpad8 => { gs.selected.push('8'); MenuResult::NoResponse },
+				VirtualKeyCode::Key9 | VirtualKeyCode::Numpad9 => { gs.selected.push('9'); MenuResult::NoResponse },
+				VirtualKeyCode::Up => {
+					if gs.last_option > 0 {
+						gs.last_option -= 1;
+						gs.selected = format!("{}", gs.last_option + 1);
+					}
+					MenuResult::NoResponse
+				},
+				VirtualKeyCode::Down => {
+					if gs.last_option < count - 1 {
+						gs.last_option += 1;
+						gs.selected = format!("{}", gs.last_option + 1);
+					}
+					MenuResult::NoResponse
+				},
+                _ => { 
+					MenuResult::NoResponse
+                },
             }
-        },
+		},
     }
 }

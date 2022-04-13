@@ -72,6 +72,8 @@ pub struct State {
     pub godmode: bool,
     pub verbose: bool,
     pub fuzz_test: bool,
+    pub selected: String,
+	pub last_option: u32,
 }
 
 impl State {
@@ -154,10 +156,12 @@ fn main() -> BError {
 
     let mut gs = State {
         ecs: World::new(),
-        runstate: RunState::MoveCursor,
+        runstate: RunState::MoveCursor,	
         godmode: false,
         verbose: false,
         fuzz_test: false,
+        selected: "1".to_string(),
+		last_option: 0,
     };
 
     for arg in env::args().skip(1) {

@@ -93,7 +93,7 @@ Unit/Fort Menu Mode:
 # Reflection on developing civlike
 Overall, I think the game's development turned out alright considering where I 
 started with my knowledge. This is the first actual game I've tried to develop, 
-and it's the first time I've tried to build a game using an entity control 
+and it's the first time I've tried to build a game using an entity component 
 system model, which was difficult to work with at first. The main problem I kept 
 running into is that I was approaching building the game from a object oriented 
 mindset and so there was a bit of a learning hurdle to get over with 

@@ -33,7 +33,7 @@ pub fn handle_move_result(
 /// Generate a key for a test, returns back the expected state after the command is run
 pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzState {
     let mut rng = thread_rng();
-    let key: i32 = rng.gen_range(0..26);
+    let key: i32 = rng.gen_range(0..27);
 
     let mut expected_state = ExpectedFuzzState {
         first: initial_state,

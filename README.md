@@ -69,11 +69,11 @@ Red background tiles: tiles that are claimed by player two
 
 Cursor Mode:     
 [Esc] Closes the game      
-[I] Opens a menu listing the units a player currently owns, from there press 
-the letter corresponding to the unit you wish to take over, and then you will 
+[I] Opens a menu listing the units a player currently owns, from there enter 
+the number corresponding to the unit you wish to take over, and then you will 
 switch to unit mode       
-[F] Opens a menu listing the forts a player currently owns, from there press 
-the letter corresponding to the fort you wish to take over, and then you will 
+[F] Opens a menu listing the forts a player currently owns, from there enter 
+the number corresponding to the fort you wish to take over, and then you will 
 switch to fort mode       
 
 Unit Mode:       
@@ -88,7 +88,9 @@ by another unit
 
 Unit/Fort Menu Mode:      
 [Esc] Exits the menu without selecting anything       
-[A-Z] For selecting something that corresponds to a letter      
+[0-9] For selecting something that corresponds to a letter      
+[Enter] For selecting a specific selection
+[Arrow Up/Down] For moving the selection up or down
 
 # Reflection on developing civlike
 Overall, I think the game's development turned out alright considering where I 

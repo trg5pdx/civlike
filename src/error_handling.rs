@@ -26,6 +26,10 @@ pub fn handle_move_result(
                 log.entries.push("Failed to grab entity".to_string());
                 log.message_type.push(MessageType::Error);
             }
+            FailedMoveReason::UnitOutOfMoves => {
+                log.entries.push("Unit out of stamina, can't make more moves".to_string());
+                log.message_type.push(MessageType::Error);
+            }	
         },
     }
 }
@@ -103,6 +107,7 @@ pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzSta
                 expected_state.first = RunState::ShowForts;
             }
         }
+		_ => { expected_state.first = initial_state; }
     }
 
     expected_state

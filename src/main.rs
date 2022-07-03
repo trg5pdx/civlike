@@ -28,6 +28,10 @@ pub use gamelog::*;
 mod gui;
 pub use gui::fort::*;
 pub use gui::unit::*;
+pub use gui::window::*;
+
+mod turns;
+pub use turns::*;
 
 mod error_handling;
 use crate::error_handling::generate_key;
@@ -51,12 +55,14 @@ pub enum RunState {
     ShowUnits,
     SelectedFort,
     ShowForts,
+	EndTurn,
 }
 
 /// Used for returning why a move failed to happen
 pub enum FailedMoveReason {
     TileBlocked,
     UnableToGrabEntity,
+	UnitOutOfMoves,
 }
 
 pub struct ExpectedFuzzState {
@@ -74,6 +80,7 @@ pub struct State {
     pub fuzz_test: bool,
     pub selected: String,
 	pub last_option: u32,
+	pub turns: u32,
 }
 
 impl State {
@@ -94,7 +101,7 @@ impl GameState for State {
 
         ctx.cls();
         camera::render_camera(&self.ecs, ctx);
-        gui::draw_ui(&self.ecs, ctx);
+        gui::draw_ui(&self.ecs, ctx, self.turns);
 
         if self.fuzz_test {
             expected_state = Some(generate_key(self.runstate, ctx));
@@ -131,6 +138,10 @@ impl GameState for State {
                     gui::MenuResult::NoResponse => {}
                 }
             }
+			RunState::EndTurn => {
+				next_turn(self);
+				self.runstate = RunState::MoveCursor;	
+			}
         }
 
         if let Some(state) = expected_state {
@@ -162,6 +173,7 @@ fn main() -> BError {
         fuzz_test: false,
         selected: "1".to_string(),
 		last_option: 0,
+		turns: 0,
     };
 
     for arg in env::args().skip(1) {

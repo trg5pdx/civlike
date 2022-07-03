@@ -59,6 +59,7 @@ pub fn unit(
             owner: player,
             health: 20,
             strength: 8,
+			stamina: 6,
         })
         .with(BlocksTile {})
         .with(Name { name })
@@ -95,7 +96,7 @@ pub fn spawn_player_entities(
     player_num: PlayerOrder,
 ) {
     let mut unit_counter = 0;
-    let mut fort_counter = 0;
+	let mut fort_counter = 0;
     {
         // Adding the player to the game using the spawn_point established outside this scope
         ecs.insert(Point::new(spawn_point.0, spawn_point.1));
@@ -116,13 +117,10 @@ pub fn spawn_player_entities(
         }
     }
 
-    for _ in 0..38 {
-        fort_counter += 1;
-        let spawn_point = generate_coordinates(ecs, (0, (crate::MAPWIDTH - 1) as i32), (0, (crate::MAPHEIGHT - 1) as i32));
-        // Building the fort
-        let fort_entity = fort(ecs, spawn_point, format!("Fort{}", fort_counter), player_num);
-        ecs.insert(fort_entity);
-    }
+	// Building the fort
+	let fort_entity = fort(ecs, spawn_point, format!("Fort{}", 1), player_num);
+	ecs.insert(fort_entity);
+	fort_counter += 1;
 
     for _ in 0..3 {
         unit_counter += 1;

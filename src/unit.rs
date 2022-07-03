@@ -26,22 +26,25 @@ fn try_move_unit(
     let moving_marker = ecs.read_storage::<Moving>();
     let map = ecs.fetch::<Map>();
 
-    if let Some((_unit, pos, viewshed, _moving)) =
+    if let Some((unit, pos, viewshed, _moving)) =
         (&mut units, &mut positions, &mut viewsheds, &moving_marker)
             .join()
             .next()
     {
         let destination_idx = xy_idx(pos.x + delta_x, pos.y + delta_y);
-        if !map.blocked[destination_idx] {
+        if !map.blocked[destination_idx] && unit.stamina > 0 {
             let mut ppos = ecs.write_resource::<Point>();
             pos.x = min(map.width, max(0, pos.x + delta_x));
             pos.y = min(map.height, max(0, pos.y + delta_y));
             ppos.x = pos.x;
             ppos.y = pos.y;
             viewshed.dirty = true;
+			unit.stamina -= 1;
 
             return Ok((pos.x, pos.y));
-        } else {
+        } else if unit.stamina == 0 {
+			return Err(FailedMoveReason::UnitOutOfMoves);
+		}else {
             return Err(FailedMoveReason::TileBlocked);
         }
     }
@@ -157,7 +160,7 @@ pub fn unit_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
 
 /// Grabs the currently moving unit and claims the tile it's currently on if it isn't claimed already
 fn claim_tile(ecs: &mut World) -> Option<(i32, i32)> {
-    let units = ecs.read_storage::<Unit>();
+    let mut units = ecs.write_storage::<Unit>();
     let positions = ecs.read_storage::<Position>();
     let moving = ecs.read_storage::<Moving>();
     let players = ecs.read_storage::<Player>();
@@ -165,15 +168,18 @@ fn claim_tile(ecs: &mut World) -> Option<(i32, i32)> {
     let mut map = ecs.fetch_mut::<Map>();
     let mut claim_pos: Option<(i32, i32)> = None;
 
-    for (_unit, pos, _move) in (&units, &positions, &moving).join() {
-        for (_player_entity, player) in (&entities, &players).join() {
-            let idx = xy_idx(pos.x, pos.y);
-            if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
-                map.claimed_tiles[idx] = player.order;
-                claim_pos = Some((pos.x, pos.y));
-            }
-        }
-    }
+		for (unit, pos, _move) in (&mut units, &positions, &moving).join() {
+			if unit.stamina > 0 {
+				for (_player_entity, player) in (&entities, &players).join() {
+					let idx = xy_idx(pos.x, pos.y);
+					if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
+						map.claimed_tiles[idx] = player.order;
+						claim_pos = Some((pos.x, pos.y));
+					}
+				}	
+				unit.stamina -= 1;			
+			}
+		}
     claim_pos
 }
 
@@ -194,7 +200,7 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
         let players = ecs.read_storage::<Player>();
         let entities = ecs.entities();
         let positions = ecs.read_storage::<Position>();
-        let units = ecs.read_storage::<Unit>();
+        let mut units = ecs.write_storage::<Unit>();
         let forts = ecs.read_storage::<Fort>();
         let moving_units = ecs.read_storage::<Moving>();
         let mut map = ecs.fetch_mut::<Map>();
@@ -202,33 +208,37 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
         for (player, _entity) in (&players, &entities).join() {
             player_order = Some(player.order);
         }
-
         if let Some(ref owner) = player_order {
-            for (_unit, pos, _moving) in (&units, &positions, &moving_units).join() {
+            for (unit, pos, _moving) in (&mut units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
                 let mut fort_at_pos = false;
+				
+				if unit.stamina > 4 {
+					for (_fort, entity) in (&forts, &entities).join() {
+						let entities_at_location = &map.tile_content[idx];
 
-                for (_fort, entity) in (&forts, &entities).join() {
-                    let entities_at_location = &map.tile_content[idx];
+						for current_entity in entities_at_location.iter() {
+							if *current_entity == entity {
+								fort_at_pos = true;
+							}
+						}
+					}
 
-                    for current_entity in entities_at_location.iter() {
-                        if *current_entity == entity {
-                            fort_at_pos = true;
-                        }
-                    }
-                }
+					if (map.claimed_tiles[idx] == *owner) && !fort_at_pos {
+						new_fort_pos = Some((pos.x, pos.y));
 
-                if (map.claimed_tiles[idx] == *owner) && !fort_at_pos {
-                    new_fort_pos = Some((pos.x, pos.y));
-
-                    // Claiming the tiles surrounding this tile if a fort can be built here
-                    for x in pos.x - 1..=pos.x + 1 {
-                        for y in pos.y - 1..=pos.y + 1 {
-                            let idx = xy_idx(x, y);
-                            map.claimed_tiles[idx] = *owner;
-                        }
-                    }
-                }
+						// Claiming the tiles surrounding this tile if a fort can be built here
+						for x in pos.x - 1..=pos.x + 1 {
+							for y in pos.y - 1..=pos.y + 1 {
+								let idx = xy_idx(x, y);
+								map.claimed_tiles[idx] = *owner;
+							}
+						}
+					}
+					unit.stamina = 0;
+				} else {
+					return None;
+				}
             }
         }
     }

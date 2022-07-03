@@ -2,7 +2,8 @@
 //!
 //! Big thanks to the Rust roguelike tutorial, which helped quite a bit with
 //! this project. This section of code comes from section 2.6: Dealing Damage
-//! Link: https://bfnightly.bracketproductions.com/rustbook/chapter_7.html#blocking-access
+//! Link: 
+//! https://bfnightly.bracketproductions.com/rustbook/chapter_7.html#blocking-access
 
 use crate::{xy_idx, BlocksTile, Map, Position};
 use specs::prelude::*;

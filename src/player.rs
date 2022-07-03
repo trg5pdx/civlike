@@ -75,6 +75,9 @@ pub fn player_input(gs: &mut State, ctx: &mut BTerm) -> RunState {
                 let res = try_move_player(0, 1, &mut gs.ecs);
                 error_handling::handle_move_result(&mut gs.ecs, res, gs.verbose);
             }
+			VirtualKeyCode::N => {	
+				return RunState::EndTurn;
+			}
             VirtualKeyCode::I => return RunState::ShowUnits,
             VirtualKeyCode::F => return RunState::ShowForts,
             VirtualKeyCode::Escape => std::process::exit(0),

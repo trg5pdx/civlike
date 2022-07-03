@@ -9,13 +9,14 @@
 use crate::PlayerOrder;
 use crate::{
     xy_idx, Fort, GameLog, Map, MessageType, Moving, Name, Player, Position, TileType, Unit,
-    VIEW_HEIGHT, VIEW_WIDTH,
+    VIEW_HEIGHT, VIEW_WIDTH, State,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
 
 pub mod fort;
 pub mod unit;
+pub mod window;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum MenuResult {
@@ -24,12 +25,32 @@ pub enum MenuResult {
     Selected,
 }
 
-pub fn draw_ui(ecs: &World, ctx: &mut BTerm) {
-    draw_sidebar(ecs, ctx);
+// Not that useful atm, will be better when more types of units/forts exist
+#[derive(PartialEq, Copy, Clone)]
+pub enum SelectionType {
+    Unit,
+    Fort,
+}
+
+pub fn draw_ui(ecs: &World, ctx: &mut BTerm, turns: u32) {
+    draw_sidebar(ecs, ctx, turns);
     draw_message_box(ecs, ctx);
 }
 
-fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
+pub fn select_player(ecs: &World) -> Option<PlayerOrder> {
+    let players = ecs.read_storage::<Player>();
+    let entities = ecs.entities();
+
+    let mut player_enum: Option<PlayerOrder> = None;
+
+    for (_entity, player) in (&entities, &players).join() {
+        player_enum = Some(player.order);
+    }
+
+    player_enum
+}
+
+fn draw_sidebar(ecs: &World, ctx: &mut BTerm, turns: u32) {
     let positions = ecs.read_storage::<Position>();
     let players = ecs.read_storage::<Player>();
     let map = ecs.fetch::<Map>();
@@ -77,6 +98,8 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
         ctx.print_color(x + 1, y + 1, RGB::named(YELLOW), bg, &location);
         ctx.print_color(x + 1, y + 2, RGB::named(GREEN), bg, &tile_str.to_string());
         ctx.print_color(x + 1, y + 3, RGB::named(ORANGE), bg, &claims);
+        ctx.print_color(x + 1, y + 4, RGB::named(VIOLET), bg, format!("Current Turn: {}", turns));
+
 
         ctx.print_color(
             x + 1,
@@ -104,6 +127,8 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm) {
         display_fort_info(ecs, ctx, x, y, pos, bg);
     }
 }
+
+
 
 fn display_unit_info(
     ecs: &World,
@@ -193,5 +218,45 @@ fn draw_message_box(ecs: &World, ctx: &mut BTerm) {
             ctx.print_color(2, y, fg, RGB::named(BLACK), message);
         }
         y += 1;
+    }
+}
+
+fn draw_selection_box(ctx: &mut BTerm, title: String) {
+    let y = 15;
+    let height = 10;
+    let y_cord = y - 2;	
+	let bg = RGB::named(BLACK);
+
+    ctx.draw_box(14, y - 2, 30, height, RGB::named(WHITE), bg);
+    ctx.print_color(18, y_cord, RGB::named(YELLOW), bg, title);
+    ctx.print_color(18, y_cord + height, RGB::named(YELLOW), bg, "ESCAPE to cancel");
+}
+
+fn draw_selection_options(gs: &mut State, ctx: &mut BTerm, selection_list: &Vec<(Entity, String)>) {
+    let y = 15;
+	let bg = RGB::named(BLACK);
+
+    let count = selection_list.len() as u32;
+    let current_option = gs.last_option;
+    let mut offset = 0;
+    if count > 7 {
+        offset = count - 7;
+    }	
+    for i in 0..7 {
+        let mut index = current_option + i;
+        if current_option > offset {
+            index = offset + i;
+        }
+        let width = index.to_string().len();
+        if index < count as u32 {
+            ctx.set(17, y + i, RGB::named(WHITE), bg, to_cp437('('));
+            ctx.print_color(18, y + i, RGB::named(YELLOW), bg, format!("{}", index + 1));
+                
+            ctx.set(18 + width, y + i, RGB::named(WHITE), bg, to_cp437(')'));
+            ctx.print(20 + width, y + i, selection_list[index as usize].1.clone());
+        }
+        if index == current_option {
+            ctx.set(16, y + i, RGB::named(WHITE), bg, to_cp437('>')); 
+        }
     }
 }

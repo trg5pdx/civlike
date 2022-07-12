@@ -68,6 +68,7 @@ pub enum FailedMoveReason {
 pub struct ExpectedFuzzState {
     first: RunState,
     second: Option<RunState>,
+    third: Option<RunState>,
 }
 
 /// Contains the game world and all of it's entities within it, and an enum for denoting
@@ -145,8 +146,12 @@ impl GameState for State {
         }
 
         if let Some(state) = expected_state {
-            if state.second.is_some() {
-                assert!((self.runstate == state.first) || (self.runstate == state.second.unwrap()));
+            if state.second.is_some() && state.third.is_some() {
+                println!("self.runstate: {:?} \n state.first: {:?} \n state.second: {:?}\n", 
+                         self.runstate, state.first, state.second.unwrap());
+                assert!((self.runstate == state.first) 
+                        || (self.runstate == state.second.unwrap())
+                        || (self.runstate == state.third.unwrap()));
             } else if self.runstate != state.first {
                 panic!(
                     "Error: runstates don't match! States: {:?} {:?}; Key: {:?}",

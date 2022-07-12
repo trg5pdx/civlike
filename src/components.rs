@@ -62,7 +62,7 @@ pub struct Unit {
     pub owner: PlayerOrder,
     pub health: u8,
     pub strength: u8,
-	pub stamina: u8,
+    pub stamina: u8,
 }
 
 /// Used for marking a unit as being movable

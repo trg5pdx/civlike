@@ -55,14 +55,14 @@ pub enum RunState {
     ShowUnits,
     SelectedFort,
     ShowForts,
-	EndTurn,
+    EndTurn,
 }
 
 /// Used for returning why a move failed to happen
 pub enum FailedMoveReason {
     TileBlocked,
     UnableToGrabEntity,
-	UnitOutOfMoves,
+    UnitOutOfMoves,
 }
 
 pub struct ExpectedFuzzState {
@@ -80,8 +80,8 @@ pub struct State {
     pub verbose: bool,
     pub fuzz_test: bool,
     pub selected: String,
-	pub last_option: u32,
-	pub turns: u32,
+    pub last_option: u32,
+    pub turns: u32,
 }
 
 impl State {
@@ -139,19 +139,25 @@ impl GameState for State {
                     gui::MenuResult::NoResponse => {}
                 }
             }
-			RunState::EndTurn => {
-				next_turn(self);
-				self.runstate = RunState::MoveCursor;	
-			}
+            RunState::EndTurn => {
+                next_turn(self);
+                self.runstate = RunState::MoveCursor;
+            }
         }
 
         if let Some(state) = expected_state {
             if state.second.is_some() && state.third.is_some() {
-                println!("self.runstate: {:?} \n state.first: {:?} \n state.second: {:?}\n", 
-                         self.runstate, state.first, state.second.unwrap());
-                assert!((self.runstate == state.first) 
+                println!(
+                    "self.runstate: {:?} \n state.first: {:?} \n state.second: {:?}\n",
+                    self.runstate,
+                    state.first,
+                    state.second.unwrap()
+                );
+                assert!(
+                    (self.runstate == state.first)
                         || (self.runstate == state.second.unwrap())
-                        || (self.runstate == state.third.unwrap()));
+                        || (self.runstate == state.third.unwrap())
+                );
             } else if self.runstate != state.first {
                 panic!(
                     "Error: runstates don't match! States: {:?} {:?}; Key: {:?}",
@@ -172,13 +178,13 @@ fn main() -> BError {
 
     let mut gs = State {
         ecs: World::new(),
-        runstate: RunState::MoveCursor,	
+        runstate: RunState::MoveCursor,
         godmode: false,
         verbose: false,
         fuzz_test: false,
         selected: "1".to_string(),
-		last_option: 0,
-		turns: 0,
+        last_option: 0,
+        turns: 0,
     };
 
     for arg in env::args().skip(1) {

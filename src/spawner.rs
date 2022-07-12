@@ -59,7 +59,7 @@ pub fn unit(
             owner: player,
             health: 20,
             strength: 8,
-			stamina: 6,
+            stamina: 6,
         })
         .with(BlocksTile {})
         .with(Name { name })
@@ -96,7 +96,7 @@ pub fn spawn_player_entities(
     player_num: PlayerOrder,
 ) {
     let mut unit_counter = 0;
-	let mut fort_counter = 0;
+    let mut fort_counter = 0;
     {
         // Adding the player to the game using the spawn_point established outside this scope
         ecs.insert(Point::new(spawn_point.0, spawn_point.1));
@@ -117,10 +117,10 @@ pub fn spawn_player_entities(
         }
     }
 
-	// Building the fort
-	let fort_entity = fort(ecs, spawn_point, format!("Fort{}", 1), player_num);
-	ecs.insert(fort_entity);
-	fort_counter += 1;
+    // Building the fort
+    let fort_entity = fort(ecs, spawn_point, format!("Fort{}", 1), player_num);
+    ecs.insert(fort_entity);
+    fort_counter += 1;
 
     for _ in 0..3 {
         unit_counter += 1;
@@ -159,9 +159,9 @@ pub fn generate_coordinates(ecs: &World, x_range: (i32, i32), y_range: (i32, i32
 
         // Checking specific tile type since the functions for populating the blocked
         // map haven't been ran yet as this occurs before the main game loop runs
-        if (map.tiles[idx] != TileType::Ice)
-            && (map.tiles[idx] != TileType::Mountain)
-            && (map.tiles[idx] != TileType::Water)
+        if (map.tiles[idx].0 != TileType::Ice)
+            && (map.tiles[idx].0 != TileType::Mountain)
+            && (map.tiles[idx].0 != TileType::Water)
         {
             position = Some((x, y));
             break;

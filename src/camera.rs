@@ -98,7 +98,7 @@ fn get_tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
         PlayerOrder::PlayerTwo => RGB::named(RED),
     };
 
-    match map.tiles[idx] {
+    match map.tiles[idx].0 {
         TileType::Mountain => {
             fg = RGB::named(GREY);
             glyph = to_cp437('A');

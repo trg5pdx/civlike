@@ -39,12 +39,12 @@ fn try_move_unit(
             ppos.x = pos.x;
             ppos.y = pos.y;
             viewshed.dirty = true;
-			unit.stamina -= 1;
+            unit.stamina -= 1;
 
             return Ok((pos.x, pos.y));
         } else if unit.stamina == 0 {
-			return Err(FailedMoveReason::UnitOutOfMoves);
-		}else {
+            return Err(FailedMoveReason::UnitOutOfMoves);
+        } else {
             return Err(FailedMoveReason::TileBlocked);
         }
     }
@@ -168,18 +168,18 @@ fn claim_tile(ecs: &mut World) -> Option<(i32, i32)> {
     let mut map = ecs.fetch_mut::<Map>();
     let mut claim_pos: Option<(i32, i32)> = None;
 
-		for (unit, pos, _move) in (&mut units, &positions, &moving).join() {
-			if unit.stamina > 0 {
-				for (_player_entity, player) in (&entities, &players).join() {
-					let idx = xy_idx(pos.x, pos.y);
-					if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
-						map.claimed_tiles[idx] = player.order;
-						claim_pos = Some((pos.x, pos.y));
-					}
-				}	
-				unit.stamina -= 1;			
-			}
-		}
+    for (unit, pos, _move) in (&mut units, &positions, &moving).join() {
+        if unit.stamina > 0 {
+            for (_player_entity, player) in (&entities, &players).join() {
+                let idx = xy_idx(pos.x, pos.y);
+                if map.claimed_tiles[idx] == PlayerOrder::NoPlayer {
+                    map.claimed_tiles[idx] = player.order;
+                    claim_pos = Some((pos.x, pos.y));
+                }
+            }
+            unit.stamina -= 1;
+        }
+    }
     claim_pos
 }
 
@@ -212,33 +212,33 @@ fn build_fort(ecs: &mut World) -> Option<(i32, i32)> {
             for (unit, pos, _moving) in (&mut units, &positions, &moving_units).join() {
                 let idx = xy_idx(pos.x, pos.y);
                 let mut fort_at_pos = false;
-				
-				if unit.stamina > 4 {
-					for (_fort, entity) in (&forts, &entities).join() {
-						let entities_at_location = &map.tile_content[idx];
 
-						for current_entity in entities_at_location.iter() {
-							if *current_entity == entity {
-								fort_at_pos = true;
-							}
-						}
-					}
+                if unit.stamina > 4 {
+                    for (_fort, entity) in (&forts, &entities).join() {
+                        let entities_at_location = &map.tile_content[idx];
 
-					if (map.claimed_tiles[idx] == *owner) && !fort_at_pos {
-						new_fort_pos = Some((pos.x, pos.y));
+                        for current_entity in entities_at_location.iter() {
+                            if *current_entity == entity {
+                                fort_at_pos = true;
+                            }
+                        }
+                    }
 
-						// Claiming the tiles surrounding this tile if a fort can be built here
-						for x in pos.x - 1..=pos.x + 1 {
-							for y in pos.y - 1..=pos.y + 1 {
-								let idx = xy_idx(x, y);
-								map.claimed_tiles[idx] = *owner;
-							}
-						}
-					}
-					unit.stamina = 0;
-				} else {
-					return None;
-				}
+                    if (map.claimed_tiles[idx] == *owner) && !fort_at_pos {
+                        new_fort_pos = Some((pos.x, pos.y));
+
+                        // Claiming the tiles surrounding this tile if a fort can be built here
+                        for x in pos.x - 1..=pos.x + 1 {
+                            for y in pos.y - 1..=pos.y + 1 {
+                                let idx = xy_idx(x, y);
+                                map.claimed_tiles[idx] = *owner;
+                            }
+                        }
+                    }
+                    unit.stamina = 0;
+                } else {
+                    return None;
+                }
             }
         }
     }

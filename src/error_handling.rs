@@ -27,9 +27,10 @@ pub fn handle_move_result(
                 log.message_type.push(MessageType::Error);
             }
             FailedMoveReason::UnitOutOfMoves => {
-                log.entries.push("Unit out of stamina, can't make more moves".to_string());
+                log.entries
+                    .push("Unit out of stamina, can't make more moves".to_string());
                 log.message_type.push(MessageType::Error);
-            }	
+            }
         },
     }
 }
@@ -38,7 +39,7 @@ pub fn handle_move_result(
 pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzState {
     let mut rng = thread_rng();
     let key: i32 = rng.gen_range(0..8);
-    let mut gen_key: Option<VirtualKeyCode> = None; 
+    // let gen_key: Option<VirtualKeyCode>;
 
     let mut expected_state = ExpectedFuzzState {
         first: initial_state,
@@ -49,31 +50,27 @@ pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzSta
     // Yes, this is very dumb. I couldn't really do anything else for generating input since
     // I can't add derive traits on external enums. I generated the match statement using
     // a small rust prorgram that wrote this out to a file so I didn't have to write it manually
-    if initial_state == RunState::ShowUnits || initial_state == RunState::ShowForts {
-        gen_key = match key {
-            0 => Some(VirtualKeyCode::Return),
-            1 => Some(VirtualKeyCode::Escape),
-            2 => Some(VirtualKeyCode::Up),
-            _ => Some(VirtualKeyCode::Down),
-
+    let gen_key = if initial_state == RunState::ShowUnits || initial_state == RunState::ShowForts {
+         match key {
+            0 => VirtualKeyCode::Return,
+            1 => VirtualKeyCode::Escape,
+            2 => VirtualKeyCode::Up,
+            _ => VirtualKeyCode::Down,
         }
     } else {
-        gen_key = match key {
-            0 => Some(VirtualKeyCode::W),
-            1 => Some(VirtualKeyCode::A),
-            2 => Some(VirtualKeyCode::S),
-            3 => Some(VirtualKeyCode::D),
-            4 => Some(VirtualKeyCode::I),
-            5 => Some(VirtualKeyCode::F),
-            6 => Some(VirtualKeyCode::G),
-            _ => Some(VirtualKeyCode::B),
-        };
-    }
-    
-    if gen_key.is_some() {
-        ctx.key = gen_key;
-        println!("key: {:?}", gen_key.unwrap()); 
-    }
+        match key {
+            0 => VirtualKeyCode::W,
+            1 => VirtualKeyCode::A,
+            2 => VirtualKeyCode::S,
+            3 => VirtualKeyCode::D,
+            4 => VirtualKeyCode::I,
+            5 => VirtualKeyCode::F,
+            6 => VirtualKeyCode::G,
+            _ => VirtualKeyCode::B,
+        }
+    };
+
+    ctx.key = Some(gen_key);
 
     // These first two cases are for the fort/unit menus, it returns two different types
     // to signal those two are the acceptable states for the game to be in
@@ -89,23 +86,29 @@ pub fn generate_key(initial_state: RunState, ctx: &mut BTerm) -> ExpectedFuzzSta
             expected_state.third = Some(RunState::MoveCursor);
         }
         RunState::MoveUnit => {
-            if key == 4 { // I
+            if key == 4 {
+                // I
                 expected_state.first = RunState::MoveCursor;
             }
         }
         RunState::SelectedFort => {
-            if (key == 7) || (key == 4) { // B and I
+            if (key == 7) || (key == 4) {
+                // B and I
                 expected_state.first = RunState::MoveCursor;
             }
         }
         RunState::MoveCursor => {
-            if key == 4 { // I
+            if key == 4 {
+                // I
                 expected_state.first = RunState::ShowUnits;
-            } else if key == 5 { // F
+            } else if key == 5 {
+                // F
                 expected_state.first = RunState::ShowForts;
             }
         }
-		_ => { expected_state.first = initial_state; }
+        _ => {
+            expected_state.first = initial_state;
+        }
     }
 
     expected_state

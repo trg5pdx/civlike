@@ -8,8 +8,8 @@
 
 use crate::PlayerOrder;
 use crate::{
-    xy_idx, Fort, GameLog, Map, MessageType, Moving, Name, Player, Position, TileType, Unit,
-    VIEW_HEIGHT, VIEW_WIDTH, State,
+    xy_idx, Fort, GameLog, Map, MessageType, Moving, Name, Player, Position, State, TileType, Unit,
+    VIEW_HEIGHT, VIEW_WIDTH,
 };
 use bracket_lib::prelude::*;
 use specs::prelude::*;
@@ -79,7 +79,7 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm, turns: u32) {
         let tile = &map.tiles[xy_idx(pos.x, pos.y)];
         let controlled = &map.claimed_tiles[xy_idx(pos.x, pos.y)];
 
-        let tile_str = match tile {
+        let tile_str = match tile.0 {
             TileType::Mountain => "Mountain".to_string(),
             TileType::Forest => "Forest".to_string(),
             TileType::Grasslands => "Grasslands".to_string(),
@@ -98,26 +98,52 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm, turns: u32) {
         ctx.print_color(x + 1, y + 1, RGB::named(YELLOW), bg, &location);
         ctx.print_color(x + 1, y + 2, RGB::named(GREEN), bg, &tile_str.to_string());
         ctx.print_color(x + 1, y + 3, RGB::named(ORANGE), bg, &claims);
-        ctx.print_color(x + 1, y + 4, RGB::named(VIOLET), bg, format!("Current Turn: {}", turns));
-
-
+        ctx.print_color(
+            x + 1,
+            y + 4,
+            RGB::named(CYAN),
+            bg,
+            format!("Food: {}", tile.1.food),
+        );
         ctx.print_color(
             x + 1,
             y + 5,
-            RGB::named(WHITE),
+            RGB::named(CYAN),
             bg,
-            "You have: ".to_string(),
+            format!("Production: {}", tile.1.prod),
         );
         ctx.print_color(
             x + 1,
             y + 6,
             RGB::named(CYAN),
             bg,
-            format!("{} units", player.unit_count),
+            format!("Gold: {}", tile.1.gold),
         );
         ctx.print_color(
             x + 1,
             y + 7,
+            RGB::named(VIOLET),
+            bg,
+            format!("Current Turn: {}", turns),
+        );
+
+        ctx.print_color(
+            x + 1,
+            y + 8,
+            RGB::named(WHITE),
+            bg,
+            "You have: ".to_string(),
+        );
+        ctx.print_color(
+            x + 1,
+            y + 9,
+            RGB::named(CYAN),
+            bg,
+            format!("{} units", player.unit_count),
+        );
+        ctx.print_color(
+            x + 1,
+            y + 10,
             RGB::named(BURLYWOOD3),
             bg,
             format!("{} forts", player.fort_count),
@@ -127,8 +153,6 @@ fn draw_sidebar(ecs: &World, ctx: &mut BTerm, turns: u32) {
         display_fort_info(ecs, ctx, x, y, pos, bg);
     }
 }
-
-
 
 fn display_unit_info(
     ecs: &World,
@@ -224,24 +248,30 @@ fn draw_message_box(ecs: &World, ctx: &mut BTerm) {
 fn draw_selection_box(ctx: &mut BTerm, title: String) {
     let y = 15;
     let height = 10;
-    let y_cord = y - 2;	
-	let bg = RGB::named(BLACK);
+    let y_cord = y - 2;
+    let bg = RGB::named(BLACK);
 
     ctx.draw_box(14, y - 2, 30, height, RGB::named(WHITE), bg);
     ctx.print_color(18, y_cord, RGB::named(YELLOW), bg, title);
-    ctx.print_color(18, y_cord + height, RGB::named(YELLOW), bg, "ESCAPE to cancel");
+    ctx.print_color(
+        18,
+        y_cord + height,
+        RGB::named(YELLOW),
+        bg,
+        "ESCAPE to cancel",
+    );
 }
 
 fn draw_selection_options(gs: &mut State, ctx: &mut BTerm, selection_list: &Vec<(Entity, String)>) {
     let y = 15;
-	let bg = RGB::named(BLACK);
+    let bg = RGB::named(BLACK);
 
     let count = selection_list.len() as u32;
     let current_option = gs.last_option;
     let mut offset = 0;
     if count > 7 {
         offset = count - 7;
-    }	
+    }
     for i in 0..7 {
         let mut index = current_option + i;
         if current_option > offset {
@@ -251,12 +281,12 @@ fn draw_selection_options(gs: &mut State, ctx: &mut BTerm, selection_list: &Vec<
         if index < count as u32 {
             ctx.set(17, y + i, RGB::named(WHITE), bg, to_cp437('('));
             ctx.print_color(18, y + i, RGB::named(YELLOW), bg, format!("{}", index + 1));
-                
+
             ctx.set(18 + width, y + i, RGB::named(WHITE), bg, to_cp437(')'));
             ctx.print(20 + width, y + i, selection_list[index as usize].1.clone());
         }
         if index == current_option {
-            ctx.set(16, y + i, RGB::named(WHITE), bg, to_cp437('>')); 
+            ctx.set(16, y + i, RGB::named(WHITE), bg, to_cp437('>'));
         }
     }
 }

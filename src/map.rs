@@ -32,6 +32,13 @@ pub enum TileType {
     Ice,
 }
 
+#[derive(PartialEq, Copy, Clone, Debug)]
+pub struct Yields {
+    pub food: i8,
+    pub prod: i8,
+    pub gold: i8,
+}
+
 /// Uses the x/y coordinates to get the location of a tile in a 1 dimensional array; used for the tile map and the heightmap
 pub fn xy_idx(x: i32, y: i32) -> usize {
     (y as usize * MAPWIDTH) + x as usize
@@ -39,7 +46,7 @@ pub fn xy_idx(x: i32, y: i32) -> usize {
 
 /// Contains all tiles of the map and includes tiles that are revealed, visible, blocked, or claimed by a player
 pub struct Map {
-    pub tiles: Vec<TileType>,
+    pub tiles: Vec<(TileType, Yields)>,
     pub width: i32,
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
@@ -51,8 +58,20 @@ pub struct Map {
 
 impl Map {
     pub fn new_map() -> Map {
+        let base_yield = Yields {
+            food: 1,
+            prod: 1,
+            gold: 1,
+        };
+
+        let no_yield = Yields {
+            food: 0,
+            prod: 0,
+            gold: 0,
+        };
+
         let mut map = Map {
-            tiles: vec![TileType::Water; MAPCOUNT],
+            tiles: vec![(TileType::Water, base_yield); MAPCOUNT],
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             revealed_tiles: vec![false; MAPCOUNT],
@@ -70,26 +89,35 @@ impl Map {
                 let idx = xy_idx(x, y);
 
                 if perlin[idx] > (1.0 / 6.0) {
-                    map.tiles[idx] = TileType::Mountain;
+                    map.tiles[idx].0 = TileType::Mountain;
+                    map.tiles[idx].1 = no_yield;
                 } else if perlin[idx] > 0.0 {
-                    map.tiles[idx] = TileType::Forest;
+                    map.tiles[idx].0 = TileType::Forest;
+                    map.tiles[idx].1 = base_yield;
                 } else if perlin[idx] > -(1.0 / 10.0) {
-                    map.tiles[idx] = TileType::Grasslands;
+                    map.tiles[idx].0 = TileType::Grasslands;
+                    map.tiles[idx].1 = base_yield;
                 } else if perlin[idx] > -(1.0 / 8.0) {
-                    map.tiles[idx] = TileType::Coast;
+                    map.tiles[idx].0 = TileType::Coast;
+                    map.tiles[idx].1 = base_yield;
                 } else {
-                    map.tiles[idx] = TileType::Water;
+                    map.tiles[idx].0 = TileType::Water;
+                    map.tiles[idx].1 = base_yield;
                 }
             }
         }
         // Make the boundaries walls
         for x in 0..map.width {
-            map.tiles[xy_idx(x, 0)] = TileType::Ice;
-            map.tiles[xy_idx(x, map.height - 1)] = TileType::Ice;
+            map.tiles[xy_idx(x, 0)].0 = TileType::Ice;
+            map.tiles[xy_idx(x, 0)].1 = no_yield;
+            map.tiles[xy_idx(x, map.height - 1)].0 = TileType::Ice;
+            map.tiles[xy_idx(x, map.height - 1)].1 = no_yield;
         }
         for y in 0..map.height {
-            map.tiles[xy_idx(0, y)] = TileType::Ice;
-            map.tiles[xy_idx(map.width - 1, y)] = TileType::Ice;
+            map.tiles[xy_idx(0, y)].0 = TileType::Ice;
+            map.tiles[xy_idx(0, y)].1 = no_yield;
+            map.tiles[xy_idx(map.width - 1, y)].0 = TileType::Ice;
+            map.tiles[xy_idx(map.width - 1, y)].1 = no_yield;
         }
 
         map
@@ -98,7 +126,8 @@ impl Map {
     // Both populate_blocked and clear_content_index came from chapter 7 of the roguelike tutorial
     pub fn populate_blocked(&mut self) {
         for (i, tile) in self.tiles.iter_mut().enumerate() {
-            if *tile == TileType::Ice || *tile == TileType::Mountain || *tile == TileType::Water {
+            if tile.0 == TileType::Ice || tile.0 == TileType::Mountain || tile.0 == TileType::Water
+            {
                 self.blocked[i] = true;
             }
         }
@@ -124,6 +153,6 @@ impl Algorithm2D for Map {
 
 impl BaseMap for Map {
     fn is_opaque(&self, idx: usize) -> bool {
-        self.tiles[idx as usize] == TileType::Ice
+        self.tiles[idx as usize].0 == TileType::Ice
     }
 }
